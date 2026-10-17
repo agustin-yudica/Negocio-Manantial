@@ -29,12 +29,16 @@
   }
   function pedirClave() {
     dlg.onclick = null; dlg.onclose = dlg.oncancel = null;
-    dlg.innerHTML = `<h2>Administrador</h2>
+    dlg.innerHTML = `<h2>Editar</h2>
       <label>Contraseña</label>
       <input id="clave" type="text" name="codigo-editor" class="oculto" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
       <div class="pie"><button class="btn" id="clNo">Cancelar</button><button class="btn primario" id="clSi">Entrar</button></div>`;
     dlg.showModal();
     $("clave").focus();
+    // verifica mientras se escribe: si es correcta, cierra el cartel sola
+    $("clave").oninput = async () => {
+      try { if ((await hashear($("clave").value)) === HASH_ADMIN) entrar(); } catch (e) { /* se verifica con Entrar */ }
+    };
     const entrar = async () => {
       try {
         if ((await hashear($("clave").value)) !== HASH_ADMIN) { $("clave").value = ""; return aviso("Contraseña incorrecta."); }
