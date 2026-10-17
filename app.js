@@ -31,7 +31,10 @@
     dlg.onclick = null; dlg.onclose = dlg.oncancel = null;
     dlg.innerHTML = `<h2>Editar</h2>
       <label>Contraseña</label>
-      <input id="clave" type="text" name="codigo-editor" class="oculto" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <div class="campo-clave">
+        <input id="clave" type="text" name="codigo-editor" class="oculto" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <button type="button" id="ojo" class="ojo" aria-label="Mostrar contraseña" title="Mostrar contraseña">👁️</button>
+      </div>
       <div class="pie"><button class="btn" id="clNo">Cancelar</button><button class="btn primario" id="clSi">Entrar</button></div>`;
     dlg.showModal();
     $("clave").focus();
@@ -45,6 +48,12 @@
         localStorage.setItem(CLAVE_ADMIN, HASH_ADMIN);
       } catch (e) { return aviso("No se pudo verificar la contraseña en este navegador."); }
       dlg.close(); aplicarAdmin(); aviso("Modo administrador activado.");
+    };
+    $("ojo").onclick = () => {
+      const oculta = $("clave").classList.toggle("oculto");
+      $("ojo").textContent = oculta ? "👁️" : "🙈";
+      $("ojo").title = $("ojo").ariaLabel = oculta ? "Mostrar contraseña" : "Ocultar contraseña";
+      $("clave").focus();
     };
     $("clNo").onclick = () => dlg.close();
     $("clSi").onclick = entrar;

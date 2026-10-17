@@ -117,6 +117,9 @@ dialog label { display: block; margin: 10px 0 4px; font-size: .9rem; color: var(
 dialog input, dialog select { width: 100%; padding: 10px; font-size: 1rem; border: 1px solid var(--linea); border-radius: 8px; }
 /* puntos en lugar de letras, sin que el navegador ofrezca guardar la contraseña */
 dialog input.oculto { -webkit-text-security: disc; text-security: disc; }
+.campo-clave { position: relative; }
+.campo-clave input { padding-right: 46px; }
+.ojo { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: none; font-size: 1.2rem; cursor: pointer; padding: 6px 8px; }
 dialog .pie { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 .cat-item { display: flex; gap: 6px; margin-bottom: 6px; }
 .cat-item input { flex: 1; }
