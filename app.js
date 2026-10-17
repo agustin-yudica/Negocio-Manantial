@@ -73,15 +73,23 @@
   function semilla() {
     return {
       categorias: [...window.CATEGORIAS_INICIALES],
-      productos: window.PRODUCTOS_INICIALES.map(([categoria, nombre, mayorista, minorista, nota]) => ({
-        id: uid(), categoria, nombre, mayorista, minorista, nota, unidad: window.unidadPorDefecto(categoria, nombre),
+      productos: window.PRODUCTOS_INICIALES.map(([categoria, nombre, mayorista, minorista, nota, sub = ""]) => ({
+        id: uid(), categoria, nombre, sub, mayorista, minorista, nota, unidad: window.unidadPorDefecto(categoria, nombre),
       })),
       actualizado: null,
     };
   }
   // Datos guardados antes de existir la unidad: se completan con el valor por defecto.
   function completarUnidades(e) {
-    e.productos.forEach((p) => { if (p.unidad !== "kg" && p.unidad !== "uni") p.unidad = window.unidadPorDefecto(p.categoria, p.nombre); });
+    e.productos.forEach((p) => {
+      if (p.unidad !== "kg" && p.unidad !== "uni") p.unidad = window.unidadPorDefecto(p.categoria, p.nombre);
+      if (typeof p.sub !== "string") {
+        // datos anteriores a la sub descripción: la nota de la Bocha Fox pasa a ser sub descripción
+        const esBochaFox = p.nombre === "Bocha Fox" && /^Pelayo c\/\s?pistacho$/i.test(p.nota || "");
+        p.sub = esBochaFox ? "Pelayo c/ pistacho" : "";
+        if (esBochaFox) p.nota = "";
+      }
+    });
     return e;
   }
   function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); }
@@ -162,7 +170,7 @@
     const q = sinAcentos(busqueda.trim());
     return estado.productos.filter((p) =>
       (q || categoriaActiva === TODAS || p.categoria === categoriaActiva) &&
-      (!q || sinAcentos(p.nombre + " " + p.nota).includes(q))
+      (!q || sinAcentos(p.nombre + " " + p.sub + " " + p.nota).includes(q))
     );
   }
   function valorNumerico(v) {
@@ -195,7 +203,7 @@
       return `<td class="precio ${cls}${f ? "" : " sin"}">${f || "—"}</td>`;
     };
     return `<tr data-id="${p.id}">
-      <td class="nombre">${esc(p.nombre)}${p.nota ? `<small class="nota-inline">${esc(p.nota)}</small>` : ""}</td>
+      <td class="nombre">${esc(p.nombre)}${p.sub ? `<small class="sub">${esc(p.sub)}</small>` : ""}</td>
       ${celda(p.mayorista, "mayo")}${celda(p.minorista, "mino")}
       <td class="nota">${esc(p.nota)}</td>
     </tr>`;
@@ -204,7 +212,10 @@
     const opcionesCat = estado.categorias.map((c) => `<option ${c === p.categoria ? "selected" : ""}>${esc(c)}</option>`).join("")
       + `<option value="${NUEVA}">➕ Nueva categoría…</option>`;
     return `<tr data-id="${p.id}">
-      <td class="nombre"><input data-campo="nombre" value="${esc(p.nombre)}" placeholder="Producto"></td>
+      <td class="nombre">
+        <input data-campo="nombre" value="${esc(p.nombre)}" placeholder="Producto">
+        <input class="sub-input" data-campo="sub" value="${esc(p.sub)}" placeholder="Sub descripción (opcional)">
+      </td>
       <td class="precio mayo"><input data-campo="mayorista" value="${esc(p.mayorista)}" inputmode="text" placeholder="Mayorista"></td>
       <td class="precio mino"><input data-campo="minorista" value="${esc(p.minorista)}" inputmode="text" placeholder="Minorista"></td>
       <td class="nota"><input data-campo="nota" value="${esc(p.nota)}" placeholder="Nota"></td>
@@ -221,6 +232,8 @@
   function pintarTabla() {
     const lista = ordenar(filtrados());
     pintarOrden();
+    // la columna Nota solo se muestra si hay alguna nota a la vista (o si se está editando)
+    $("tabla").classList.toggle("sin-notas", !editando && !lista.some((p) => p.nota));
     $("vacio").hidden = lista.length > 0;
     let html = "";
     if (categoriaActiva === TODAS && !busqueda) {
@@ -292,7 +305,7 @@
   $("btnAgregar").addEventListener("click", () => {
     const cat = categoriaActiva !== TODAS ? categoriaActiva : estado.categorias[0];
     if (!cat) return aviso("Primero creá una categoría.");
-    const nuevo = { id: uid(), categoria: cat, nombre: "", mayorista: "", minorista: "", nota: "", unidad: window.unidadPorDefecto(cat, "") };
+    const nuevo = { id: uid(), categoria: cat, nombre: "", sub: "", mayorista: "", minorista: "", nota: "", unidad: window.unidadPorDefecto(cat, "") };
     // insertar al final de su categoría
     let idx = -1;
     estado.productos.forEach((p, i) => { if (p.categoria === cat) idx = i; });
@@ -402,8 +415,8 @@
   function fechaArchivo() { return new Date().toISOString().slice(0, 10); }
   function descargarCSV() {
     const celda = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
-    const filas = [["Categoría", "Producto", "Mayorista", "Minorista", "Unidad", "Nota"]];
-    estado.productos.forEach((p) => filas.push([p.categoria, p.nombre, p.mayorista, p.minorista, p.unidad, p.nota]));
+    const filas = [["Categoría", "Producto", "Sub descripción", "Mayorista", "Minorista", "Unidad", "Nota"]];
+    estado.productos.forEach((p) => filas.push([p.categoria, p.nombre, p.sub, p.mayorista, p.minorista, p.unidad, p.nota]));
     descargar(`lista-precios-${fechaArchivo()}.csv`, "﻿" + filas.map((f) => f.map(celda).join(";")).join("\r\n"), "text/csv;charset=utf-8");
   }
   function descargarRespaldo() {

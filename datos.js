@@ -1,5 +1,5 @@
 // Catálogo inicial transcripto del cuaderno.
-// Formato: [categoría, producto, mayorista, minorista, nota]
+// Formato: [categoría, producto, mayorista, minorista, nota, subdescripción (opcional)]
 // Los precios son texto libre (ej: "1200 x 100") para respetar las anotaciones del cuaderno.
 window.CATEGORIAS_INICIALES = [
   "Quesos",
@@ -83,7 +83,7 @@ window.PRODUCTOS_INICIALES = [
   // ---- FIAMBRES ----
   ["Fiambres", "Bocha 42", "12500", "", ""],
   ["Fiambres", "Bocha Recreo y Pelayo", "8100", "", ""],
-  ["Fiambres", "Bocha Fox", "11200", "", "Pelayo c/pistacho"],
+  ["Fiambres", "Bocha Fox", "11200", "", "", "Pelayo c/ pistacho"],
   ["Fiambres", "Bocha Calchaquí", "11900", "", ""],
   ["Fiambres", "Bocha Paladini", "11900", "", ""],
   ["Fiambres", "Mortadela Cilindro", "5900", "", ""],

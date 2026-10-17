@@ -85,7 +85,9 @@ table { width: 100%; border-collapse: collapse; background: var(--card);
 th, td { padding: 8px 10px; border-bottom: 1px solid var(--linea); text-align: left; vertical-align: middle; }
 th { background: var(--fila-cat); color: var(--acento); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
 td.precio, th.c-precio { text-align: right; width: 130px; }
-.nota-inline { display: none; }
+.sub { display: block; color: var(--suave); font-size: .78rem; font-weight: 400; margin-top: 2px; }
+.sub-input { margin-top: 4px; font-size: .85rem; }
+#tabla.sin-notas .c-nota, #tabla.sin-notas td.nota { display: none; }
 .orden {
   all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center;
   color: inherit; font: inherit; text-transform: inherit; letter-spacing: inherit;
@@ -148,10 +150,9 @@ dialog .pie { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18
   body:not(.editando) th, body:not(.editando) td { padding: 8px 6px; }
   body:not(.editando) th { font-size: .7rem; }
   body:not(.editando) th.c-precio, body:not(.editando) td.precio { width: 27%; }
-  body:not(.editando) .c-nota, body:not(.editando) td.nota { display: none; }
+  body:not(.editando) th.c-nota, body:not(.editando) td.nota { width: 18%; font-size: .72rem; line-height: 1.2; word-break: break-word; }
   body:not(.editando) td.nombre { font-size: .92rem; line-height: 1.25; }
   body:not(.editando) td.precio { font-size: .9rem; white-space: nowrap; }
-  .nota-inline { display: block; color: var(--suave); font-size: .75rem; font-weight: 400; }
 
   /* Edición: cada producto como tarjeta para que los campos sean cómodos */
   body.editando table, body.editando thead, body.editando tbody, body.editando tr, body.editando td { display: block; }
