@@ -74,16 +74,21 @@
     return {
       categorias: [...window.CATEGORIAS_INICIALES],
       productos: window.PRODUCTOS_INICIALES.map(([categoria, nombre, mayorista, minorista, nota]) => ({
-        id: uid(), categoria, nombre, mayorista, minorista, nota,
+        id: uid(), categoria, nombre, mayorista, minorista, nota, unidad: window.unidadPorDefecto(categoria, nombre),
       })),
       actualizado: null,
     };
+  }
+  // Datos guardados antes de existir la unidad: se completan con el valor por defecto.
+  function completarUnidades(e) {
+    e.productos.forEach((p) => { if (p.unidad !== "kg" && p.unidad !== "uni") p.unidad = window.unidadPorDefecto(p.categoria, p.nombre); });
+    return e;
   }
   function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); }
   function cargar() {
     try {
       const raw = localStorage.getItem(CLAVE);
-      if (raw) return JSON.parse(raw);
+      if (raw) return completarUnidades(JSON.parse(raw));
     } catch (e) { /* sin almacenamiento: se usa el catálogo inicial */ }
     return semilla();
   }
@@ -95,11 +100,12 @@
   }
 
   // ---------- Utilidades ----------
-  function formatearPrecio(valor) {
+  function formatearPrecio(valor, unidad) {
     const v = String(valor ?? "").trim();
     if (!v) return "";
     if (/^\d+([.,]\d+)?$/.test(v)) {
-      return "$ " + Number(v.replace(",", ".")).toLocaleString("es-AR");
+      // precio simple: lleva la unidad de venta (kg o uni)
+      return "$ " + Number(v.replace(",", ".")).toLocaleString("es-AR") + (unidad ? " " + unidad : "");
     }
     // textos tipo "1200 x 100": formatear el primer número
     return v.replace(/^(\d+)/, (n) => "$ " + Number(n).toLocaleString("es-AR"));
@@ -185,7 +191,7 @@
   }
   function filaVista(p) {
     const celda = (v, cls) => {
-      const f = formatearPrecio(v);
+      const f = formatearPrecio(v, p.unidad);
       return `<td class="precio ${cls}${f ? "" : " sin"}">${f || "—"}</td>`;
     };
     return `<tr data-id="${p.id}">
@@ -204,6 +210,10 @@
       <td class="nota"><input data-campo="nota" value="${esc(p.nota)}" placeholder="Nota"></td>
       <td class="acc edit-only">
         <select data-campo="categoria" title="Categoría" style="width:100%;margin-bottom:4px">${opcionesCat}</select>
+        <select data-campo="unidad" title="Se vende por kg o por unidad" style="width:100%;margin-bottom:4px">
+          <option value="kg" ${p.unidad === "kg" ? "selected" : ""}>por kg</option>
+          <option value="uni" ${p.unidad === "uni" ? "selected" : ""}>por unidad</option>
+        </select>
         <button class="btn-fila borrar" data-borrar="${p.id}" title="Eliminar">🗑️</button>
       </td>
     </tr>`;
@@ -282,7 +292,7 @@
   $("btnAgregar").addEventListener("click", () => {
     const cat = categoriaActiva !== TODAS ? categoriaActiva : estado.categorias[0];
     if (!cat) return aviso("Primero creá una categoría.");
-    const nuevo = { id: uid(), categoria: cat, nombre: "", mayorista: "", minorista: "", nota: "" };
+    const nuevo = { id: uid(), categoria: cat, nombre: "", mayorista: "", minorista: "", nota: "", unidad: window.unidadPorDefecto(cat, "") };
     // insertar al final de su categoría
     let idx = -1;
     estado.productos.forEach((p, i) => { if (p.categoria === cat) idx = i; });
@@ -392,8 +402,8 @@
   function fechaArchivo() { return new Date().toISOString().slice(0, 10); }
   function descargarCSV() {
     const celda = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
-    const filas = [["Categoría", "Producto", "Mayorista", "Minorista", "Nota"]];
-    estado.productos.forEach((p) => filas.push([p.categoria, p.nombre, p.mayorista, p.minorista, p.nota]));
+    const filas = [["Categoría", "Producto", "Mayorista", "Minorista", "Unidad", "Nota"]];
+    estado.productos.forEach((p) => filas.push([p.categoria, p.nombre, p.mayorista, p.minorista, p.unidad, p.nota]));
     descargar(`lista-precios-${fechaArchivo()}.csv`, "﻿" + filas.map((f) => f.map(celda).join(";")).join("\r\n"), "text/csv;charset=utf-8");
   }
   function descargarRespaldo() {
@@ -406,7 +416,7 @@
       const datos = JSON.parse(await f.text());
       if (!Array.isArray(datos.categorias) || !Array.isArray(datos.productos)) throw new Error();
       if (!confirm("Esto reemplaza la lista actual por la de la copia. ¿Continuar?")) return;
-      estado = datos; categoriaActiva = TODAS; guardar(); pintar(); aviso("Copia restaurada.");
+      estado = completarUnidades(datos); categoriaActiva = TODAS; guardar(); pintar(); aviso("Copia restaurada.");
     } catch { aviso("El archivo no es una copia de seguridad válida."); }
   });
   function reiniciar() {

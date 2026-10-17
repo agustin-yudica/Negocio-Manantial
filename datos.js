@@ -210,3 +210,17 @@ window.PRODUCTOS_INICIALES = [
   ["Condimentos y salsas", "Condimento para carnes", "1000", "1200", ""],
   ["Condimentos y salsas", "Condimento para empanadas", "500", "500", ""],
 ];
+
+// Unidad de venta por defecto: se vende por peso (kg) o por unidad (uni).
+// Quesos y fiambres van por kg, salvo las excepciones; el resto va por unidad.
+// Cada producto se puede cambiar desde el modo edición.
+window.UNIDAD_EXCEPCIONES_UNI = [
+  "Provolone x 2 unidades",
+  "Salchicha x 6 Fela",
+  "Salchicha x 6 Carcarañá",
+  "Salchicha x 6 Otto",
+];
+window.unidadPorDefecto = (categoria, nombre) => {
+  if (window.UNIDAD_EXCEPCIONES_UNI.includes(nombre)) return "uni";
+  return categoria === "Quesos" || categoria === "Fiambres" ? "kg" : "uni";
+};
