@@ -31,7 +31,7 @@
     dlg.onclick = null; dlg.onclose = dlg.oncancel = null;
     dlg.innerHTML = `<h2>Administrador</h2>
       <label>Contraseña</label>
-      <input id="clave" type="password" autocomplete="current-password">
+      <input id="clave" type="text" name="codigo-editor" class="oculto" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
       <div class="pie"><button class="btn" id="clNo">Cancelar</button><button class="btn primario" id="clSi">Entrar</button></div>`;
     dlg.showModal();
     $("clave").focus();
@@ -193,6 +193,7 @@
     categoriaActiva = b.dataset.cat; pintar();
   });
   $("btnAdmin").addEventListener("click", pedirClave);
+  $("btnSalir").addEventListener("click", salirAdmin);
   $("btnImprimir").addEventListener("click", () => window.print());
   $("btnEditar").addEventListener("click", () => {
     if (!esAdmin() && !editando) return;

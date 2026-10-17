@@ -115,6 +115,8 @@ dialog::backdrop { background: rgba(0,0,0,.4); }
 dialog h2 { margin-top: 0; font-size: 1.15rem; }
 dialog label { display: block; margin: 10px 0 4px; font-size: .9rem; color: var(--suave); }
 dialog input, dialog select { width: 100%; padding: 10px; font-size: 1rem; border: 1px solid var(--linea); border-radius: 8px; }
+/* puntos en lugar de letras, sin que el navegador ofrezca guardar la contraseña */
+dialog input.oculto { -webkit-text-security: disc; text-security: disc; }
 dialog .pie { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 .cat-item { display: flex; gap: 6px; margin-bottom: 6px; }
 .cat-item input { flex: 1; }
