@@ -85,6 +85,14 @@ table { width: 100%; border-collapse: collapse; background: var(--card);
 th, td { padding: 8px 10px; border-bottom: 1px solid var(--linea); text-align: left; vertical-align: middle; }
 th { background: var(--fila-cat); color: var(--acento); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
 td.precio, th.c-precio { text-align: right; width: 130px; }
+.nota-inline { display: none; }
+.orden {
+  all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center;
+  color: inherit; font: inherit; text-transform: inherit; letter-spacing: inherit;
+}
+.orden .flecha { font-size: 1em; opacity: .45; }
+.orden.activo .flecha { opacity: 1; }
+.orden:focus-visible { outline: 2px solid var(--acento); border-radius: 4px; }
 td.precio { font-variant-numeric: tabular-nums; font-weight: 600; }
 td.mayo { background: var(--mayo); }
 td.mino { background: var(--mino); }
@@ -134,18 +142,29 @@ dialog .pie { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18
 @media (max-width: 640px) {
   body { font-size: 16px; }
   .tabs { top: 112px; }
-  table, thead, tbody, tr, td { display: block; }
-  thead { display: none; }
-  tr { padding: 10px 12px; border-bottom: 1px solid var(--linea); position: relative; }
-  td { border: 0; padding: 2px 0; }
-  td.nombre { font-weight: 600; margin-bottom: 4px; }
-  td.precio { display: inline-block; width: auto; min-width: 46%; text-align: left; border-radius: 6px; padding: 4px 8px; margin-right: 2%; }
-  td.mayo::before { content: "Mayorista: "; font-weight: 400; font-size: .8rem; }
-  td.mino::before { content: "Minorista: "; font-weight: 400; font-size: .8rem; }
-  td.nota { display: block; margin-top: 4px; }
-  body.editando td.precio { display: block; margin: 4px 0; }
-  td.acc { margin-top: 6px; }
-  tr.cat-fila { padding: 8px 12px; }
+  main { padding: 4px 8px 80px; }
+
+  /* Vista: misma tabla que en la computadora (Producto | Mayorista | Minorista) */
+  body:not(.editando) th, body:not(.editando) td { padding: 8px 6px; }
+  body:not(.editando) th { font-size: .7rem; }
+  body:not(.editando) th.c-precio, body:not(.editando) td.precio { width: 27%; }
+  body:not(.editando) .c-nota, body:not(.editando) td.nota { display: none; }
+  body:not(.editando) td.nombre { font-size: .92rem; line-height: 1.25; }
+  body:not(.editando) td.precio { font-size: .9rem; white-space: nowrap; }
+  .nota-inline { display: block; color: var(--suave); font-size: .75rem; font-weight: 400; }
+
+  /* Edición: cada producto como tarjeta para que los campos sean cómodos */
+  body.editando table, body.editando thead, body.editando tbody, body.editando tr, body.editando td { display: block; }
+  body.editando thead { display: none; }
+  body.editando tr { padding: 10px 12px; border-bottom: 1px solid var(--linea); position: relative; }
+  body.editando td { border: 0; padding: 2px 0; }
+  body.editando td.nombre { font-weight: 600; margin-bottom: 4px; }
+  body.editando td.precio { display: block; width: auto; text-align: left; margin: 4px 0; padding: 4px 8px; border-radius: 6px; }
+  body.editando td.mayo::before { content: "Mayorista: "; font-weight: 400; font-size: .8rem; }
+  body.editando td.mino::before { content: "Minorista: "; font-weight: 400; font-size: .8rem; }
+  body.editando td.nota { display: block; margin-top: 4px; }
+  body.editando td.acc { margin-top: 6px; }
+  body.editando tr.cat-fila { padding: 8px 12px; }
 }
 
 @media print {

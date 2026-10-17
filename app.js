@@ -7,6 +7,8 @@
   let categoriaActiva = TODAS;
   let editando = false;
   let busqueda = "";
+  let ordenCol = null;  // "mayorista" | "minorista" | null (orden original)
+  let ordenDir = "desc";
 
   const $ = (id) => document.getElementById(id);
   const cuerpo = $("cuerpo");
@@ -157,13 +159,37 @@
       (!q || sinAcentos(p.nombre + " " + p.nota).includes(q))
     );
   }
+  function valorNumerico(v) {
+    const m = String(v ?? "").trim().match(/^\d+([.,]\d+)?/);
+    return m ? Number(m[0].replace(",", ".")) : null;
+  }
+  function ordenar(lista) {
+    if (!ordenCol) return lista;
+    const signo = ordenDir === "desc" ? -1 : 1;
+    // los productos sin precio quedan siempre al final
+    return [...lista].sort((a, b) => {
+      const x = valorNumerico(a[ordenCol]), y = valorNumerico(b[ordenCol]);
+      if (x === null && y === null) return 0;
+      if (x === null) return 1;
+      if (y === null) return -1;
+      return (x - y) * signo;
+    });
+  }
+  function pintarOrden() {
+    document.querySelectorAll(".orden").forEach((b) => {
+      const activo = b.dataset.orden === ordenCol;
+      b.classList.toggle("activo", activo);
+      b.querySelector(".flecha").textContent = !activo ? "⇅" : ordenDir === "desc" ? "▼" : "▲";
+      b.title = !activo ? "Ordenar de mayor a menor" : ordenDir === "desc" ? "Ordenado de mayor a menor (tocá para invertir)" : "Ordenado de menor a mayor (tocá para quitar el orden)";
+    });
+  }
   function filaVista(p) {
     const celda = (v, cls) => {
       const f = formatearPrecio(v);
       return `<td class="precio ${cls}${f ? "" : " sin"}">${f || "—"}</td>`;
     };
     return `<tr data-id="${p.id}">
-      <td class="nombre">${esc(p.nombre)}</td>
+      <td class="nombre">${esc(p.nombre)}${p.nota ? `<small class="nota-inline">${esc(p.nota)}</small>` : ""}</td>
       ${celda(p.mayorista, "mayo")}${celda(p.minorista, "mino")}
       <td class="nota">${esc(p.nota)}</td>
     </tr>`;
@@ -183,7 +209,8 @@
     </tr>`;
   }
   function pintarTabla() {
-    const lista = filtrados();
+    const lista = ordenar(filtrados());
+    pintarOrden();
     $("vacio").hidden = lista.length > 0;
     let html = "";
     if (categoriaActiva === TODAS && !busqueda) {
@@ -207,6 +234,15 @@
     const b = e.target.closest(".tab"); if (!b) return;
     if (b.dataset.nueva) return nuevaCategoria();
     categoriaActiva = b.dataset.cat; pintar();
+  });
+  // Orden por precio: mayor→menor, menor→mayor, y vuelve al orden original
+  document.querySelector("thead").addEventListener("click", (e) => {
+    const b = e.target.closest(".orden"); if (!b) return;
+    const col = b.dataset.orden;
+    if (ordenCol !== col) { ordenCol = col; ordenDir = "desc"; }
+    else if (ordenDir === "desc") ordenDir = "asc";
+    else ordenCol = null;
+    pintarTabla();
   });
   $("btnAdmin").addEventListener("click", pedirClave);
   $("btnSalir").addEventListener("click", salirAdmin);
