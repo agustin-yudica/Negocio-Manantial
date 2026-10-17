@@ -12,6 +12,45 @@
   const cuerpo = $("cuerpo");
   const dlg = $("dlg");
 
+  // ---------- Modo administrador ----------
+  // Candado simple: sin la contraseña no aparecen los controles de edición.
+  const HASH_ADMIN = "9293ed9bfdb6d2756aa293f85c2f590b1bd756a4be6d4b0f12640503c4bad0df";
+  const CLAVE_ADMIN = "manantial.admin";
+  async function hashear(texto) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("manantial:" + texto));
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  function esAdmin() {
+    try { return localStorage.getItem(CLAVE_ADMIN) === HASH_ADMIN; } catch (e) { return false; }
+  }
+  function aplicarAdmin() {
+    document.body.classList.toggle("admin", esAdmin());
+    if (!esAdmin() && editando) $("btnEditar").click(); // sale del modo edición
+  }
+  function pedirClave() {
+    dlg.onclick = null; dlg.onclose = dlg.oncancel = null;
+    dlg.innerHTML = `<h2>Administrador</h2>
+      <label>Contraseña</label>
+      <input id="clave" type="password" autocomplete="current-password">
+      <div class="pie"><button class="btn" id="clNo">Cancelar</button><button class="btn primario" id="clSi">Entrar</button></div>`;
+    dlg.showModal();
+    $("clave").focus();
+    const entrar = async () => {
+      try {
+        if ((await hashear($("clave").value)) !== HASH_ADMIN) { $("clave").value = ""; return aviso("Contraseña incorrecta."); }
+        localStorage.setItem(CLAVE_ADMIN, HASH_ADMIN);
+      } catch (e) { return aviso("No se pudo verificar la contraseña en este navegador."); }
+      dlg.close(); aplicarAdmin(); aviso("Modo administrador activado.");
+    };
+    $("clNo").onclick = () => dlg.close();
+    $("clSi").onclick = entrar;
+    $("clave").onkeydown = (e) => { if (e.key === "Enter") entrar(); };
+  }
+  function salirAdmin() {
+    try { localStorage.removeItem(CLAVE_ADMIN); } catch (e) { /* nada */ }
+    aplicarAdmin(); aviso("Saliste del modo administrador.");
+  }
+
   // ---------- Datos ----------
   function semilla() {
     return {
@@ -153,7 +192,10 @@
     if (b.dataset.nueva) return nuevaCategoria();
     categoriaActiva = b.dataset.cat; pintar();
   });
+  $("btnAdmin").addEventListener("click", pedirClave);
+  $("btnImprimir").addEventListener("click", () => window.print());
   $("btnEditar").addEventListener("click", () => {
+    if (!esAdmin() && !editando) return;
     editando = !editando;
     document.body.classList.toggle("editando", editando);
     $("btnEditar").textContent = editando ? "✅ Listo" : "✏️ Editar";
@@ -204,7 +246,8 @@
   $("menu").addEventListener("click", (e) => {
     const a = e.target.dataset.accion; if (!a) return;
     $("menu").hidden = true;
-    ({ porcentaje, categorias: dialogoCategorias, imprimir: () => window.print(), csv: descargarCSV,
+    if (!esAdmin()) return;
+    ({ salir: salirAdmin, porcentaje, categorias: dialogoCategorias, imprimir: () => window.print(), csv: descargarCSV,
        respaldo: descargarRespaldo, restaurar: () => $("archivoRespaldo").click(), reiniciar })[a]();
   });
 
@@ -318,5 +361,6 @@
     estado = semilla(); categoriaActiva = TODAS; guardar(); pintar(); aviso("Catálogo original restaurado.");
   }
 
+  aplicarAdmin();
   pintar();
 })();

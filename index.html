@@ -14,8 +14,10 @@
     </div>
     <input id="buscar" type="search" placeholder="Buscar producto…" autocomplete="off">
     <div class="acciones">
-      <button id="btnEditar" class="btn primario">✏️ Editar</button>
-      <button id="btnMenu" class="btn">⋯ Más</button>
+      <button id="btnImprimir" class="btn visitante-only">🖨️ Imprimir</button>
+      <button id="btnAdmin" class="btn visitante-only">🔒 Admin</button>
+      <button id="btnEditar" class="btn primario admin-only">✏️ Editar</button>
+      <button id="btnMenu" class="btn admin-only">⋯ Más</button>
       <div id="menu" class="menu" hidden>
         <button data-accion="porcentaje">📈 Ajustar precios por %</button>
         <button data-accion="categorias">🗂️ Administrar categorías</button>
@@ -24,6 +26,7 @@
         <button data-accion="respaldo">💾 Guardar copia de seguridad</button>
         <button data-accion="restaurar">📂 Restaurar copia de seguridad</button>
         <button data-accion="reiniciar" class="peligro">♻️ Volver al catálogo original</button>
+        <button data-accion="salir">🔓 Salir de administrador</button>
       </div>
       <input id="archivoRespaldo" type="file" accept=".json" hidden>
     </div>

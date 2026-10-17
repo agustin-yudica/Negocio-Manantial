@@ -103,6 +103,10 @@ td input:focus { outline: 2px solid var(--acento); border-color: var(--acento); 
 .agregar { margin-top: 14px; }
 .vacio { text-align: center; color: var(--suave); padding: 30px; }
 
+/* visitantes vs administrador */
+body:not(.admin) .admin-only { display: none !important; }
+body.admin .visitante-only { display: none !important; }
+
 /* ocultar controles de edición fuera del modo edición */
 body:not(.editando) .edit-only { display: none !important; }
 
