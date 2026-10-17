@@ -16,6 +16,9 @@
   // Candado simple: sin la contraseña no aparecen los controles de edición.
   const HASH_ADMIN = "9293ed9bfdb6d2756aa293f85c2f590b1bd756a4be6d4b0f12640503c4bad0df";
   const CLAVE_ADMIN = "manantial.admin";
+  const svg = (trazos) => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${trazos}</svg>`;
+  const OJO = svg(`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>`);
+  const OJO_TACHADO = svg(`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/>`);
   async function hashear(texto) {
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("manantial:" + texto));
     return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -33,7 +36,7 @@
       <label>Contraseña</label>
       <div class="campo-clave">
         <input id="clave" type="text" name="codigo-editor" class="oculto" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-        <button type="button" id="ojo" class="ojo" aria-label="Mostrar contraseña" title="Mostrar contraseña">👁️</button>
+        <button type="button" id="ojo" class="ojo" aria-label="Mostrar contraseña" title="Mostrar contraseña">${OJO}</button>
       </div>
       <div class="pie"><button class="btn" id="clNo">Cancelar</button><button class="btn primario" id="clSi">Entrar</button></div>`;
     dlg.showModal();
@@ -51,7 +54,7 @@
     };
     $("ojo").onclick = () => {
       const oculta = $("clave").classList.toggle("oculto");
-      $("ojo").textContent = oculta ? "👁️" : "🙈";
+      $("ojo").innerHTML = oculta ? OJO : OJO_TACHADO;
       $("ojo").title = $("ojo").ariaLabel = oculta ? "Mostrar contraseña" : "Ocultar contraseña";
       $("clave").focus();
     };
