@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lista de Precios - Manantial</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="titulo">
+      <h1>Lista de Precios</h1>
+      <small id="actualizado"></small>
+    </div>
+    <input id="buscar" type="search" placeholder="Buscar producto…" autocomplete="off">
+    <div class="acciones">
+      <button id="btnEditar" class="btn primario">✏️ Editar</button>
+      <button id="btnMenu" class="btn">⋯ Más</button>
+      <div id="menu" class="menu" hidden>
+        <button data-accion="porcentaje">📈 Ajustar precios por %</button>
+        <button data-accion="categorias">🗂️ Administrar categorías</button>
+        <button data-accion="imprimir">🖨️ Imprimir / PDF</button>
+        <button data-accion="csv">📄 Descargar para Excel (CSV)</button>
+        <button data-accion="respaldo">💾 Guardar copia de seguridad</button>
+        <button data-accion="restaurar">📂 Restaurar copia de seguridad</button>
+        <button data-accion="reiniciar" class="peligro">♻️ Volver al catálogo original</button>
+      </div>
+      <input id="archivoRespaldo" type="file" accept=".json" hidden>
+    </div>
+  </header>
+
+  <nav id="tabs" class="tabs"></nav>
+
+  <main>
+    <p id="aviso" class="aviso" hidden>Modo edición: tocá cualquier campo para cambiarlo. Se guarda solo.</p>
+    <table id="tabla">
+      <thead>
+        <tr>
+          <th class="c-nombre">Producto</th>
+          <th class="c-precio">Mayorista</th>
+          <th class="c-precio">Minorista</th>
+          <th class="c-nota">Nota</th>
+          <th class="c-acc edit-only"></th>
+        </tr>
+      </thead>
+      <tbody id="cuerpo"></tbody>
+    </table>
+    <p id="vacio" class="vacio" hidden>No hay productos para mostrar.</p>
+    <button id="btnAgregar" class="btn primario agregar edit-only">➕ Agregar producto</button>
+  </main>
+
+  <dialog id="dlg"></dialog>
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="datos.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

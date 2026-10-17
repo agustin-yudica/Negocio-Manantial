@@ -1,0 +1,322 @@
+(() => {
+  const CLAVE = "manantial.lista.v1";
+  const TODAS = "Todas";
+  const NUEVA = "__nueva__";
+
+  let estado = cargar();
+  let categoriaActiva = TODAS;
+  let editando = false;
+  let busqueda = "";
+
+  const $ = (id) => document.getElementById(id);
+  const cuerpo = $("cuerpo");
+  const dlg = $("dlg");
+
+  // ---------- Datos ----------
+  function semilla() {
+    return {
+      categorias: [...window.CATEGORIAS_INICIALES],
+      productos: window.PRODUCTOS_INICIALES.map(([categoria, nombre, mayorista, minorista, nota]) => ({
+        id: uid(), categoria, nombre, mayorista, minorista, nota,
+      })),
+      actualizado: null,
+    };
+  }
+  function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); }
+  function cargar() {
+    try {
+      const raw = localStorage.getItem(CLAVE);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { /* sin almacenamiento: se usa el catálogo inicial */ }
+    return semilla();
+  }
+  function guardar() {
+    estado.actualizado = new Date().toISOString();
+    try { localStorage.setItem(CLAVE, JSON.stringify(estado)); }
+    catch (e) { aviso("⚠️ No se pudo guardar en este navegador. Descargá una copia de seguridad."); }
+    pintarFecha();
+  }
+
+  // ---------- Utilidades ----------
+  function formatearPrecio(valor) {
+    const v = String(valor ?? "").trim();
+    if (!v) return "";
+    if (/^\d+([.,]\d+)?$/.test(v)) {
+      return "$ " + Number(v.replace(",", ".")).toLocaleString("es-AR");
+    }
+    // textos tipo "1200 x 100": formatear el primer número
+    return v.replace(/^(\d+)/, (n) => "$ " + Number(n).toLocaleString("es-AR"));
+  }
+  function aviso(msg) {
+    const t = $("toast");
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(aviso.t);
+    aviso.t = setTimeout(() => (t.hidden = true), 3000);
+  }
+  function sinAcentos(s) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+  function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+  // ---------- Pintar ----------
+  function pintarFecha() {
+    $("actualizado").textContent = estado.actualizado
+      ? "Actualizado: " + new Date(estado.actualizado).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" })
+      : "";
+  }
+  function pintarTabs() {
+    const conteo = (c) => estado.productos.filter((p) => p.categoria === c).length;
+    const items = [TODAS, ...estado.categorias];
+    $("tabs").innerHTML = items.map((c) => {
+      const n = c === TODAS ? estado.productos.length : conteo(c);
+      return `<button class="tab ${c === categoriaActiva ? "activa" : ""}" data-cat="${esc(c)}">${esc(c)}<span class="n">${n}</span></button>`;
+    }).join("") + (editando ? `<button class="tab nueva" data-nueva="1">➕ Nueva categoría</button>` : "");
+  }
+  function nuevaCategoria(idProducto) {
+    dlg.onclick = null;
+    dlg.innerHTML = `<h2>Nueva categoría</h2>
+      <label>Nombre</label>
+      <input id="catNombre" placeholder="Ej: Bebidas" autocomplete="off">
+      <div class="pie"><button class="btn" id="ncNo">Cancelar</button><button class="btn primario" id="ncSi">Crear</button></div>`;
+    dlg.showModal();
+    $("catNombre").focus();
+    const crear = () => {
+      const nombre = $("catNombre").value.trim();
+      if (!nombre) return aviso("Escribí un nombre.");
+      if (estado.categorias.some((c) => sinAcentos(c) === sinAcentos(nombre))) return aviso("Esa categoría ya existe.");
+      estado.categorias.push(nombre);
+      categoriaActiva = nombre;
+      const p = idProducto && estado.productos.find((x) => x.id === idProducto);
+      if (p) p.categoria = nombre;
+      guardar(); pintar(); dlg.close();
+      aviso(p ? `Categoría "${nombre}" creada y producto movido.` : `Categoría "${nombre}" creada. Usá ➕ Agregar producto.`);
+    };
+    // si cancela (botón o Esc), el desplegable vuelve a su valor
+    dlg.onclose = dlg.oncancel = () => pintarTabla();
+    $("ncNo").onclick = () => { dlg.close(); pintarTabla(); };
+    $("ncSi").onclick = crear;
+    $("catNombre").onkeydown = (e) => { if (e.key === "Enter") crear(); };
+  }
+  function filtrados() {
+    const q = sinAcentos(busqueda.trim());
+    return estado.productos.filter((p) =>
+      (q || categoriaActiva === TODAS || p.categoria === categoriaActiva) &&
+      (!q || sinAcentos(p.nombre + " " + p.nota).includes(q))
+    );
+  }
+  function filaVista(p) {
+    const celda = (v, cls) => {
+      const f = formatearPrecio(v);
+      return `<td class="precio ${cls}${f ? "" : " sin"}">${f || "—"}</td>`;
+    };
+    return `<tr data-id="${p.id}">
+      <td class="nombre">${esc(p.nombre)}</td>
+      ${celda(p.mayorista, "mayo")}${celda(p.minorista, "mino")}
+      <td class="nota">${esc(p.nota)}</td>
+    </tr>`;
+  }
+  function filaEdicion(p) {
+    const opcionesCat = estado.categorias.map((c) => `<option ${c === p.categoria ? "selected" : ""}>${esc(c)}</option>`).join("")
+      + `<option value="${NUEVA}">➕ Nueva categoría…</option>`;
+    return `<tr data-id="${p.id}">
+      <td class="nombre"><input data-campo="nombre" value="${esc(p.nombre)}" placeholder="Producto"></td>
+      <td class="precio mayo"><input data-campo="mayorista" value="${esc(p.mayorista)}" inputmode="text" placeholder="Mayorista"></td>
+      <td class="precio mino"><input data-campo="minorista" value="${esc(p.minorista)}" inputmode="text" placeholder="Minorista"></td>
+      <td class="nota"><input data-campo="nota" value="${esc(p.nota)}" placeholder="Nota"></td>
+      <td class="acc edit-only">
+        <select data-campo="categoria" title="Categoría" style="width:100%;margin-bottom:4px">${opcionesCat}</select>
+        <button class="btn-fila borrar" data-borrar="${p.id}" title="Eliminar">🗑️</button>
+      </td>
+    </tr>`;
+  }
+  function pintarTabla() {
+    const lista = filtrados();
+    $("vacio").hidden = lista.length > 0;
+    let html = "";
+    if (categoriaActiva === TODAS && !busqueda) {
+      const por = {};
+      lista.forEach((p) => (por[p.categoria] ??= []).push(p));
+      estado.categorias.forEach((c) => {
+        if (!por[c]) return;
+        html += `<tr class="cat-fila"><td colspan="5">${esc(c)}</td></tr>`;
+        html += por[c].map(editando ? filaEdicion : filaVista).join("");
+      });
+    } else {
+      html = lista.map(editando ? filaEdicion : filaVista).join("");
+    }
+    cuerpo.innerHTML = html;
+  }
+  function pintar() { pintarTabs(); pintarTabla(); pintarFecha(); }
+
+  // ---------- Eventos principales ----------
+  $("buscar").addEventListener("input", (e) => { busqueda = e.target.value; pintarTabla(); });
+  $("tabs").addEventListener("click", (e) => {
+    const b = e.target.closest(".tab"); if (!b) return;
+    if (b.dataset.nueva) return nuevaCategoria();
+    categoriaActiva = b.dataset.cat; pintar();
+  });
+  $("btnEditar").addEventListener("click", () => {
+    editando = !editando;
+    document.body.classList.toggle("editando", editando);
+    $("btnEditar").textContent = editando ? "✅ Listo" : "✏️ Editar";
+    $("aviso").hidden = !editando;
+    pintar();
+  });
+
+  // Edición en línea: se guarda al escribir
+  cuerpo.addEventListener("input", (e) => {
+    const campo = e.target.dataset.campo; if (!campo) return;
+    if (e.target.value === NUEVA) return;
+    const p = estado.productos.find((x) => x.id === e.target.closest("tr").dataset.id);
+    if (!p) return;
+    p[campo] = e.target.value;
+    guardar();
+  });
+  cuerpo.addEventListener("change", (e) => {
+    if (e.target.dataset.campo !== "categoria") return;
+    if (e.target.value === NUEVA) return nuevaCategoria(e.target.closest("tr").dataset.id);
+    pintar();
+  });
+  cuerpo.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-borrar]"); if (!b) return;
+    const p = estado.productos.find((x) => x.id === b.dataset.borrar);
+    if (p && confirm(`¿Eliminar "${p.nombre || "este producto"}"?`)) {
+      estado.productos = estado.productos.filter((x) => x.id !== p.id);
+      guardar(); pintar();
+    }
+  });
+
+  $("btnAgregar").addEventListener("click", () => {
+    const cat = categoriaActiva !== TODAS ? categoriaActiva : estado.categorias[0];
+    if (!cat) return aviso("Primero creá una categoría.");
+    const nuevo = { id: uid(), categoria: cat, nombre: "", mayorista: "", minorista: "", nota: "" };
+    // insertar al final de su categoría
+    let idx = -1;
+    estado.productos.forEach((p, i) => { if (p.categoria === cat) idx = i; });
+    estado.productos.splice(idx + 1, 0, nuevo);
+    busqueda = ""; $("buscar").value = "";
+    guardar(); pintar();
+    const input = cuerpo.querySelector(`tr[data-id="${nuevo.id}"] input`);
+    if (input) { input.scrollIntoView({ block: "center" }); input.focus(); }
+  });
+
+  // ---------- Menú ----------
+  $("btnMenu").addEventListener("click", (e) => { e.stopPropagation(); $("menu").hidden = !$("menu").hidden; });
+  document.addEventListener("click", () => ($("menu").hidden = true));
+  $("menu").addEventListener("click", (e) => {
+    const a = e.target.dataset.accion; if (!a) return;
+    $("menu").hidden = true;
+    ({ porcentaje, categorias: dialogoCategorias, imprimir: () => window.print(), csv: descargarCSV,
+       respaldo: descargarRespaldo, restaurar: () => $("archivoRespaldo").click(), reiniciar })[a]();
+  });
+
+  // ---------- Ajuste por porcentaje ----------
+  function porcentaje() {
+    dlg.innerHTML = `<h2>Ajustar precios por %</h2>
+      <label>Porcentaje (usá negativo para bajar, ej: -5)</label>
+      <input id="pct" type="number" step="0.1" placeholder="Ej: 10">
+      <label>Aplicar a</label>
+      <select id="pctCat"><option value="${TODAS}">Todas las categorías</option>${estado.categorias.map((c) => `<option ${c === categoriaActiva ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>
+      <label>Columna</label>
+      <select id="pctCol"><option value="ambas">Mayorista y Minorista</option><option value="mayorista">Solo Mayorista</option><option value="minorista">Solo Minorista</option></select>
+      <label>Redondear a</label>
+      <select id="pctRed"><option value="10">Múltiplo de $10</option><option value="50">Múltiplo de $50</option><option value="1">Sin redondear</option></select>
+      <p style="font-size:.85rem;color:#6b7280">Solo cambia precios que sean un número. Los textos como "1200 x 100" se ajustan en su primer número.</p>
+      <div class="pie"><button class="btn" id="pctNo">Cancelar</button><button class="btn primario" id="pctSi">Aplicar</button></div>`;
+    dlg.showModal();
+    $("pctNo").onclick = () => dlg.close();
+    $("pctSi").onclick = () => {
+      const pct = parseFloat($("pct").value);
+      if (!isFinite(pct) || pct === 0) return aviso("Escribí un porcentaje.");
+      const cat = $("pctCat").value, col = $("pctCol").value, red = Number($("pctRed").value);
+      const ajustar = (v) => String(v ?? "").replace(/^\d+([.,]\d+)?/, (n) => {
+        const nuevo = Number(n.replace(",", ".")) * (1 + pct / 100);
+        return String(Math.round(nuevo / red) * red);
+      });
+      let cambios = 0;
+      estado.productos.forEach((p) => {
+        if (cat !== TODAS && p.categoria !== cat) return;
+        ["mayorista", "minorista"].forEach((k) => {
+          if (col !== "ambas" && col !== k) return;
+          const n = ajustar(p[k]); if (n !== p[k]) { p[k] = n; cambios++; }
+        });
+      });
+      guardar(); pintar(); dlg.close(); aviso(`${cambios} precios actualizados.`);
+    };
+  }
+
+  // ---------- Categorías ----------
+  function dialogoCategorias() {
+    const copia = estado.categorias.map((c) => ({ original: c, nombre: c }));
+    const dibujar = () => {
+      dlg.innerHTML = `<h2>Categorías</h2>
+        <div id="lista">${copia.map((c, i) => `<div class="cat-item"><input data-i="${i}" value="${esc(c.nombre)}">
+          <button class="btn-fila" data-sube="${i}" title="Subir">⬆️</button>
+          <button class="btn-fila borrar" data-borra="${i}" title="Eliminar">🗑️</button></div>`).join("")}</div>
+        <button class="btn" id="catNueva">➕ Nueva categoría</button>
+        <div class="pie"><button class="btn" id="catNo">Cancelar</button><button class="btn primario" id="catSi">Guardar</button></div>`;
+      $("catNo").onclick = () => dlg.close();
+      $("catNueva").onclick = () => { copia.push({ original: null, nombre: "" }); dibujar(); dlg.querySelector(".cat-item:last-child input").focus(); };
+      $("catSi").onclick = guardarCategorias;
+    };
+    dlg.addEventListener("input", (e) => { if (e.target.dataset.i) copia[e.target.dataset.i].nombre = e.target.value; });
+    dlg.onclick = (e) => {
+      const s = e.target.closest("[data-sube]"), b = e.target.closest("[data-borra]");
+      if (s) { const i = +s.dataset.sube; if (i > 0) { [copia[i - 1], copia[i]] = [copia[i], copia[i - 1]]; dibujar(); } }
+      if (b) {
+        const c = copia[+b.dataset.borra];
+        const n = estado.productos.filter((p) => p.categoria === c.original).length;
+        if (n && !confirm(`"${c.nombre}" tiene ${n} productos. Si la eliminás, también se eliminan. ¿Seguro?`)) return;
+        copia.splice(+b.dataset.borra, 1); dibujar();
+      }
+    };
+    function guardarCategorias() {
+      const nombres = copia.map((c) => c.nombre.trim());
+      if (nombres.some((n) => !n)) return aviso("Hay categorías sin nombre.");
+      if (new Set(nombres.map(sinAcentos)).size !== nombres.length) return aviso("Hay categorías repetidas.");
+      const vivas = new Set(copia.map((c) => c.original).filter(Boolean));
+      estado.productos = estado.productos.filter((p) => vivas.has(p.categoria));
+      copia.forEach((c) => {
+        if (c.original && c.original !== c.nombre.trim()) {
+          estado.productos.forEach((p) => { if (p.categoria === c.original) p.categoria = c.nombre.trim(); });
+          if (categoriaActiva === c.original) categoriaActiva = c.nombre.trim();
+        }
+      });
+      estado.categorias = nombres;
+      if (categoriaActiva !== TODAS && !nombres.includes(categoriaActiva)) categoriaActiva = TODAS;
+      guardar(); pintar(); dlg.close(); aviso("Categorías guardadas.");
+    }
+    dibujar(); dlg.showModal();
+  }
+
+  // ---------- Exportar / respaldo ----------
+  function descargar(nombre, contenido, tipo) {
+    const url = URL.createObjectURL(new Blob([contenido], { type: tipo }));
+    const a = document.createElement("a"); a.href = url; a.download = nombre; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function fechaArchivo() { return new Date().toISOString().slice(0, 10); }
+  function descargarCSV() {
+    const celda = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
+    const filas = [["Categoría", "Producto", "Mayorista", "Minorista", "Nota"]];
+    estado.productos.forEach((p) => filas.push([p.categoria, p.nombre, p.mayorista, p.minorista, p.nota]));
+    descargar(`lista-precios-${fechaArchivo()}.csv`, "﻿" + filas.map((f) => f.map(celda).join(";")).join("\r\n"), "text/csv;charset=utf-8");
+  }
+  function descargarRespaldo() {
+    descargar(`respaldo-lista-${fechaArchivo()}.json`, JSON.stringify(estado, null, 2), "application/json");
+    aviso("Copia de seguridad descargada.");
+  }
+  $("archivoRespaldo").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    try {
+      const datos = JSON.parse(await f.text());
+      if (!Array.isArray(datos.categorias) || !Array.isArray(datos.productos)) throw new Error();
+      if (!confirm("Esto reemplaza la lista actual por la de la copia. ¿Continuar?")) return;
+      estado = datos; categoriaActiva = TODAS; guardar(); pintar(); aviso("Copia restaurada.");
+    } catch { aviso("El archivo no es una copia de seguridad válida."); }
+  });
+  function reiniciar() {
+    if (!confirm("Esto borra TODOS los cambios y vuelve al catálogo original del cuaderno. ¿Seguro?")) return;
+    estado = semilla(); categoriaActiva = TODAS; guardar(); pintar(); aviso("Catálogo original restaurado.");
+  }
+
+  pintar();
+})();
