@@ -209,7 +209,7 @@
   function filaVista(p) {
     const celda = (v, cls) => {
       const f = formatearPrecio(v, p.unidad);
-      return `<td class="precio ${cls}${f ? "" : " sin"}">${f || "—"}</td>`;
+      return `<td class="precio ${cls}${f ? "" : " sin"}${f.length > 15 ? " largo" : ""}">${f || "—"}</td>`;
     };
     return `<tr data-id="${p.id}">
       <td class="nombre">${esc(p.nombre)}${p.sub ? `<small class="sub">${esc(p.sub)}</small>` : ""}</td>

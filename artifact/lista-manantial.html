@@ -1,6 +1,6 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <title>Lista Manantial</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;500;600;700&display=swap">
 <style>
   /* Lista de precios mayorista/minorista. Bordó sobre crema, tipografía serif para títulos. */
   :root {
@@ -16,6 +16,9 @@
     --mayo: #f6ecec;
     --mino: #f2efe4;
     --fila-cat: #efe9dd;
+    --marca-1: #5e232b;
+    --marca-2: #b23a4d;
+    --marca-gota-brillo: #e9b9c0;
     --peligro: #b3261e;
     --aviso-bg: #fff7d6;
     --aviso-borde: #ecd978;
@@ -28,6 +31,7 @@
       --bg: #1c1416; --card: #271b1e; --campo: #1f1517; --texto: #f4ecec; --suave: #b9a5a8;
       --linea: #3b2b2f; --acento: #e3a3ab; --acento-fondo: #8e3b46; --sobre-acento: #ffffff;
       --mayo: #33232a; --mino: #2e2a22; --fila-cat: #31262a; --peligro: #ff8a80;
+      --marca-1: #f6c9cf; --marca-2: #e0788a; --marca-gota-brillo: #c46b78;
       --aviso-bg: #3a3320; --aviso-borde: #6b5d2a; --sombra: rgba(0,0,0,.5);
       color-scheme: dark;
     }
@@ -36,6 +40,7 @@
     --bg: #1c1416; --card: #271b1e; --campo: #1f1517; --texto: #f4ecec; --suave: #b9a5a8;
     --linea: #3b2b2f; --acento: #e3a3ab; --acento-fondo: #8e3b46; --sobre-acento: #ffffff;
     --mayo: #33232a; --mino: #2e2a22; --fila-cat: #31262a; --peligro: #ff8a80;
+    --marca-1: #f6c9cf; --marca-2: #e0788a; --marca-gota-brillo: #c46b78;
     --aviso-bg: #3a3320; --aviso-borde: #6b5d2a; --sombra: rgba(0,0,0,.5);
     color-scheme: dark;
   }
@@ -47,6 +52,13 @@
 
   header.barra { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--card); border-bottom: 1px solid var(--linea); }
   header.barra .envoltorio { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding-block: 10px; }
+  .encabezado { display: flex; align-items: center; gap: 18px; min-width: 0; flex-wrap: wrap; }
+  .marca { display: flex; align-items: center; gap: 10px; flex: none; padding-right: 18px; border-right: 1px solid var(--linea); }
+  .marca-gota { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--acento-fondo); color: var(--sobre-acento); box-shadow: 0 4px 12px var(--sombra); }
+  .marca-texto { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+  .marca-nombre { font-family: var(--serif); font-weight: 900; font-size: 2.05rem; line-height: .95; letter-spacing: -.025em; padding-bottom: .06em;
+    background: linear-gradient(110deg, var(--marca-1) 0%, var(--marca-2) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .marca-sub { font-size: .66rem; font-weight: 700; letter-spacing: .42em; text-transform: uppercase; color: var(--suave); padding-left: .1em; }
   .titulo { min-width: 0; }
   .titulo h1 { margin: 0; font-family: var(--serif); font-weight: 700; font-size: 1.45rem; color: var(--acento); }
   .titulo small { color: var(--suave); font-size: .8rem; }
@@ -125,12 +137,33 @@
     body { font-size: 16px; }
     .envoltorio { padding-inline: max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-right, 0px)); }
     header.barra .envoltorio { padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); }
+    .encabezado { gap: 12px; flex-wrap: nowrap; }
+    .marca { padding-right: 12px; gap: 8px; }
+    .marca-gota { width: 34px; height: 34px; }
+    .marca-gota svg { width: 18px; height: 18px; }
+    .marca-nombre { font-size: 1.55rem; }
+    .marca-sub { font-size: .56rem; letter-spacing: .34em; }
+    .titulo h1 { font-size: 1.05rem; }
     .tabs { padding-inline: 8px; }
     /* Vista: la misma tabla que en la computadora */
     body:not(.editando) th, body:not(.editando) td { padding: 8px 6px; }
     body:not(.editando) th { font-size: .64rem; letter-spacing: 0; }
     body:not(.editando) th.c-precio, body:not(.editando) td.precio { width: auto; }
-    body:not(.editando) th.c-nota, body:not(.editando) td.nota { width: 1%; font-size: .72rem; line-height: 1.2; white-space: nowrap; }
+    body:not(.editando) th.c-nota, body:not(.editando) td.nota { width: 1%; font-size: .72rem; line-height: 1.2; white-space: nowrap; padding-inline: 3px; }
+    body:not(.editando) th.c-nota { font-size: .56rem; }
+    body:not(.editando) th.c-precio .orden { gap: 2px; }
+    /* anchos fijos: el nombre se parte por renglones y los precios no se cortan */
+    body:not(.editando) #tabla { table-layout: fixed; }
+    body:not(.editando) #tabla th:nth-child(1) { width: 28%; }
+    body:not(.editando) #tabla th:nth-child(2) { width: 24%; }
+    body:not(.editando) #tabla th:nth-child(3) { width: 26%; }
+    body:not(.editando) #tabla th.c-nota { width: 22%; }
+    body:not(.editando) #tabla.sin-notas th:nth-child(1) { width: 36%; }
+    body:not(.editando) #tabla.sin-notas th:nth-child(2) { width: 31%; }
+    body:not(.editando) #tabla.sin-notas th:nth-child(3) { width: 33%; }
+    body:not(.editando) #tabla th, body:not(.editando) #tabla td.nota { overflow: hidden; }
+    body:not(.editando) #tabla td.nombre { overflow-wrap: break-word; hyphens: auto; }
+    body:not(.editando) td.precio.largo { white-space: normal; font-size: .7rem; line-height: 1.15; }
     body:not(.editando) td.nombre { font-size: .9rem; line-height: 1.25; overflow-wrap: anywhere; }
     body:not(.editando) td.precio { font-size: .8rem; white-space: nowrap; }
     /* Edición: cada producto como tarjeta */
@@ -148,7 +181,13 @@
 
 <header class="barra">
   <div class="envoltorio">
-    <div class="titulo"><h1>Lista de Precios</h1><small id="actualizado"></small></div>
+    <div class="encabezado">
+      <div class="marca" role="img" aria-label="Manantial Almacén">
+        <span class="marca-gota"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 2.6c3.6 4.7 6.1 7.8 6.1 11.1a6.1 6.1 0 0 1-12.2 0c0-3.3 2.5-6.4 6.1-11.1z" fill="currentColor"/><path d="M9.2 14.2a3 3 0 0 0 2.4 2.9" fill="none" stroke="var(--marca-gota-brillo)" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+        <span class="marca-texto"><span class="marca-nombre">Manantial</span><span class="marca-sub">Almacén</span></span>
+      </div>
+      <div class="titulo"><h1>Lista de Precios</h1><small id="actualizado"></small></div>
+    </div>
     <input id="buscar" type="search" placeholder="Buscar producto…" autocomplete="off" aria-label="Buscar producto">
     <div class="acciones">
       <button id="btnAdmin" class="btn solo-bloqueado" type="button">🔒 Editar</button>
@@ -306,7 +345,7 @@
     return items;
   }
   function filaVista({ p }) {
-    const celda = (v, cls) => { const f = formatearPrecio(v, p.unidad); return `<td class="precio ${cls}${f ? "" : " sin"}">${f || "—"}</td>`; };
+    const celda = (v, cls) => { const f = formatearPrecio(v, p.unidad); return `<td class="precio ${cls}${f ? "" : " sin"}${f.length > 15 ? " largo" : ""}">${f || "—"}</td>`; };
     return `<tr><td class="nombre">${esc(p.nombre)}${p.sub ? `<small class="sub">${esc(p.sub)}</small>` : ""}</td>${celda(p.mayorista, "mayo")}${celda(p.minorista, "mino")}<td class="nota">${esc(p.nota)}</td></tr>`;
   }
   function filaEdicion({ p, c }) {
