@@ -149,8 +149,10 @@ dialog .pie { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18
   /* Vista: misma tabla que en la computadora (Producto | Mayorista | Minorista) */
   body:not(.editando) th, body:not(.editando) td { padding: 8px 6px; }
   body:not(.editando) th { font-size: .7rem; }
-  body:not(.editando) th.c-precio, body:not(.editando) td.precio { width: 27%; }
-  body:not(.editando) th.c-nota, body:not(.editando) td.nota { width: 18%; font-size: .72rem; line-height: 1.2; word-break: break-word; }
+  body:not(.editando) th.c-precio, body:not(.editando) td.precio { width: auto; }
+  /* la nota va en una sola línea (horizontal); si es muy larga se desplaza de costado */
+  body:not(.editando) th.c-nota, body:not(.editando) td.nota { width: 1%; font-size: .72rem; line-height: 1.2; white-space: nowrap; }
+  body:not(.editando) .tabla-scroll { overflow-x: auto; }
   body:not(.editando) td.nombre { font-size: .92rem; line-height: 1.25; }
   body:not(.editando) td.precio { font-size: .9rem; white-space: nowrap; }
 
