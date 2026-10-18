@@ -1,0 +1,677 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Lista Manantial</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+  /* Lista de precios mayorista/minorista. Bordó sobre crema, tipografía serif para títulos. */
+  :root {
+    --bg: #f8f7f1;
+    --card: #ffffff;
+    --campo: #ffffff;
+    --texto: #2b1a1c;
+    --suave: #7a6a6c;
+    --linea: #e8e3d8;
+    --acento: #722f37;
+    --acento-fondo: #722f37;
+    --sobre-acento: #ffffff;
+    --mayo: #f6ecec;
+    --mino: #f2efe4;
+    --fila-cat: #efe9dd;
+    --peligro: #b3261e;
+    --aviso-bg: #fff7d6;
+    --aviso-borde: #ecd978;
+    --sombra: rgba(0,0,0,.18);
+    --serif: "Fraunces", Georgia, serif;
+    --sans: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1c1416; --card: #271b1e; --campo: #1f1517; --texto: #f4ecec; --suave: #b9a5a8;
+      --linea: #3b2b2f; --acento: #e3a3ab; --acento-fondo: #8e3b46; --sobre-acento: #ffffff;
+      --mayo: #33232a; --mino: #2e2a22; --fila-cat: #31262a; --peligro: #ff8a80;
+      --aviso-bg: #3a3320; --aviso-borde: #6b5d2a; --sombra: rgba(0,0,0,.5);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1c1416; --card: #271b1e; --campo: #1f1517; --texto: #f4ecec; --suave: #b9a5a8;
+    --linea: #3b2b2f; --acento: #e3a3ab; --acento-fondo: #8e3b46; --sobre-acento: #ffffff;
+    --mayo: #33232a; --mino: #2e2a22; --fila-cat: #31262a; --peligro: #ff8a80;
+    --aviso-bg: #3a3320; --aviso-borde: #6b5d2a; --sombra: rgba(0,0,0,.5);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--texto); font-family: var(--sans); font-size: 17px; }
+  .envoltorio { max-width: 980px; margin: 0 auto; padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); }
+
+  header.barra { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--card); border-bottom: 1px solid var(--linea); }
+  header.barra .envoltorio { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding-block: 10px; }
+  .titulo { min-width: 0; }
+  .titulo h1 { margin: 0; font-family: var(--serif); font-weight: 700; font-size: 1.45rem; color: var(--acento); }
+  .titulo small { color: var(--suave); font-size: .8rem; }
+  #buscar { flex: 1 1 200px; min-width: 0; padding: 10px 12px; font: inherit; font-size: 1rem; border: 1px solid var(--linea); border-radius: 12px; background: var(--campo); color: var(--texto); }
+  .acciones { position: relative; display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .btn { padding: 10px 14px; font: inherit; font-size: .95rem; font-weight: 600; cursor: pointer; border: 1px solid var(--linea); border-radius: 12px; background: var(--card); color: var(--acento); }
+  .btn:hover { background: var(--mayo); }
+  .btn.primario { background: var(--acento-fondo); color: var(--sobre-acento); border-color: var(--acento-fondo); }
+  .btn.primario:hover { filter: brightness(1.1); }
+  .btn:focus-visible, .tab:focus-visible, .orden:focus-visible, td input:focus-visible, td select:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
+  .menu { position: absolute; right: 0; top: 46px; z-index: 20; display: flex; flex-direction: column; min-width: 260px; background: var(--card); border: 1px solid var(--linea); border-radius: 12px; box-shadow: 0 8px 24px var(--sombra); overflow: hidden; }
+  .menu button { text-align: left; padding: 12px 14px; font: inherit; font-size: .95rem; color: var(--texto); border: 0; border-bottom: 1px solid var(--linea); background: none; cursor: pointer; }
+  .menu button:last-child { border-bottom: 0; }
+  .menu button:hover { background: var(--mayo); }
+
+  .tabs { display: flex; gap: 6px; padding-block: 10px; overflow-x: auto; }
+  .tab { flex: none; padding: 8px 14px; border-radius: 999px; cursor: pointer; border: 1px solid var(--linea); background: var(--card); font: inherit; font-size: .95rem; font-weight: 600; color: var(--acento); }
+  .tab.activa { background: var(--acento-fondo); color: var(--sobre-acento); border-color: var(--acento-fondo); }
+  .tab.nueva { border-style: dashed; }
+  .tab .n { opacity: .65; font-size: .8rem; margin-left: 4px; font-weight: 500; }
+
+  main { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  .aviso { background: var(--aviso-bg); border: 1px solid var(--aviso-borde); border-radius: 8px; padding: 8px 12px; font-size: .9rem; }
+  .estado { text-align: center; color: var(--suave); padding: 40px 16px; }
+  .estado h2 { font-family: var(--serif); color: var(--acento); margin: 0 0 8px; }
+
+  .tabla-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--linea); }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--linea); text-align: left; vertical-align: middle; }
+  th { background: var(--fila-cat); color: var(--acento); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
+  td.precio, th.c-precio { text-align: right; width: 130px; }
+  td.precio { font-variant-numeric: tabular-nums; font-weight: 700; }
+  td.mayo { background: var(--mayo); }
+  td.mino { background: var(--mino); }
+  td.sin { color: var(--suave); font-weight: 400; opacity: .6; }
+  td.nota { color: var(--suave); font-size: .9rem; }
+  #tabla.sin-notas .c-nota, #tabla.sin-notas td.nota { display: none; }
+  .sub { display: block; color: var(--suave); font-size: .78rem; font-weight: 400; margin-top: 2px; }
+  tr.cat-fila td { background: var(--fila-cat); color: var(--acento); font-family: var(--serif); font-weight: 700; font-size: 1.05rem; }
+  .orden { all: unset; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; color: inherit; font: inherit; text-transform: inherit; letter-spacing: inherit; }
+  .orden .flecha { opacity: .45; }
+  .orden.activo .flecha { opacity: 1; }
+
+  td input, td select { width: 100%; padding: 8px; font: inherit; font-size: 1rem; border: 1px solid var(--linea); border-radius: 8px; background: var(--campo); color: var(--texto); }
+  td.precio input { text-align: right; }
+  .sub-input { margin-top: 4px; font-size: .85rem; }
+  .acc select { margin-bottom: 4px; }
+  .c-acc { width: 150px; }
+  .btn-fila { padding: 6px 10px; font: inherit; font-size: .9rem; border: 1px solid var(--linea); border-radius: 8px; background: var(--card); color: var(--texto); cursor: pointer; }
+  .btn-fila:hover { color: var(--peligro); border-color: var(--peligro); }
+  .agregar { margin-top: 14px; }
+
+  body:not(.editando) .solo-edicion { display: none !important; }
+  body:not(.puede) .solo-editor { display: none !important; }
+  body:not(.bloqueado) .solo-bloqueado { display: none !important; }
+  .campo-clave { position: relative; }
+  .campo-clave input { padding-right: 46px; }
+  input.oculto { -webkit-text-security: disc; }
+  .ojo { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: none; color: var(--acento); cursor: pointer; padding: 6px 8px; display: flex; }
+
+  .fondo-modal { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.45); }
+  .modal { width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; background: var(--card); color: var(--texto); border-radius: 14px; padding: 20px; box-shadow: 0 10px 40px var(--sombra); }
+  .modal h2 { margin: 0 0 6px; font-family: var(--serif); color: var(--acento); font-size: 1.15rem; }
+  .modal label { display: block; margin: 12px 0 4px; font-size: .9rem; color: var(--suave); }
+  .modal input, .modal select { width: 100%; padding: 10px; font: inherit; font-size: 1rem; border: 1px solid var(--linea); border-radius: 10px; background: var(--campo); color: var(--texto); }
+  .modal .nota-chica { font-size: .85rem; color: var(--suave); }
+  .modal .pie { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+  .cat-item { display: flex; gap: 6px; margin-bottom: 6px; }
+  .cat-item input { flex: 1; min-width: 0; }
+  .toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); max-width: calc(100% - 32px); background: #111827; color: #fff; padding: 10px 18px; border-radius: 10px; z-index: 50; text-align: center; }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .envoltorio { padding-inline: max(8px, env(safe-area-inset-left, 0px)) max(8px, env(safe-area-inset-right, 0px)); }
+    header.barra .envoltorio { padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px)); }
+    .tabs { padding-inline: 8px; }
+    /* Vista: la misma tabla que en la computadora */
+    body:not(.editando) th, body:not(.editando) td { padding: 8px 6px; }
+    body:not(.editando) th { font-size: .64rem; letter-spacing: 0; }
+    body:not(.editando) th.c-precio, body:not(.editando) td.precio { width: auto; }
+    body:not(.editando) th.c-nota, body:not(.editando) td.nota { width: 1%; font-size: .72rem; line-height: 1.2; white-space: nowrap; }
+    body:not(.editando) td.nombre { font-size: .9rem; line-height: 1.25; overflow-wrap: anywhere; }
+    body:not(.editando) td.precio { font-size: .8rem; white-space: nowrap; }
+    /* Edición: cada producto como tarjeta */
+    body.editando table, body.editando thead, body.editando tbody, body.editando tr, body.editando td { display: block; }
+    body.editando thead { display: none; }
+    body.editando tr { padding: 10px 12px; border-bottom: 1px solid var(--linea); }
+    body.editando td { border: 0; padding: 2px 0; }
+    body.editando td.precio { width: auto; text-align: left; margin: 4px 0; padding: 4px 8px; border-radius: 8px; }
+    body.editando td.mayo::before { content: "Mayorista: "; font-weight: 400; font-size: .8rem; }
+    body.editando td.mino::before { content: "Minorista: "; font-weight: 400; font-size: .8rem; }
+    body.editando td.acc { margin-top: 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<header class="barra">
+  <div class="envoltorio">
+    <div class="titulo"><h1>Lista de Precios</h1><small id="actualizado"></small></div>
+    <input id="buscar" type="search" placeholder="Buscar producto…" autocomplete="off" aria-label="Buscar producto">
+    <div class="acciones">
+      <button id="btnAdmin" class="btn solo-bloqueado" type="button">🔒 Editar</button>
+      <button id="btnEditar" class="btn primario solo-editor" type="button">✏️ Editar</button>
+      <button id="btnSalir" class="btn solo-editor" type="button">🔓 Cerrar Sesión Editor</button>
+      <button id="btnMenu" class="btn solo-editor" type="button">⋯ Más</button>
+      <div id="menu" class="menu" hidden>
+        <button type="button" data-accion="porcentaje">📈 Ajustar precios por %</button>
+        <button type="button" data-accion="categorias">🗂️ Administrar categorías</button>
+        <button type="button" data-accion="csv">📄 Descargar para Excel (CSV)</button>
+        <button type="button" data-accion="respaldo">💾 Guardar copia de seguridad</button>
+        <button type="button" data-accion="restaurar">📂 Restaurar copia de seguridad</button>
+        <button type="button" data-accion="reiniciar" style="color:var(--peligro)">♻️ Volver al catálogo original</button>
+      </div>
+      <input id="archivoRespaldo" type="file" accept=".json" hidden>
+    </div>
+  </div>
+</header>
+
+<div class="envoltorio">
+  <nav id="tabs" class="tabs" aria-label="Categorías"></nav>
+  <main>
+    <p id="aviso" class="aviso" hidden>Modo edición: tocá cualquier campo para cambiarlo. Se guarda solo.</p>
+    <div id="estado" class="estado" hidden></div>
+    <div class="tabla-scroll" id="contenedorTabla" hidden>
+      <table id="tabla">
+        <thead>
+          <tr>
+            <th class="c-nombre"><button type="button" class="orden" data-orden="nombre" title="Ordenar de la A a la Z">Producto <span class="flecha">⇅</span></button></th>
+            <th class="c-precio"><button type="button" class="orden" data-orden="mayorista" title="Ordenar por Mayorista">Mayorista <span class="flecha">⇅</span></button></th>
+            <th class="c-precio"><button type="button" class="orden" data-orden="minorista" title="Ordenar por Minorista">Minorista <span class="flecha">⇅</span></button></th>
+            <th class="c-nota">Nota</th>
+            <th class="c-acc solo-edicion"></th>
+          </tr>
+        </thead>
+        <tbody id="cuerpo"></tbody>
+      </table>
+    </div>
+    <button id="btnAgregar" class="btn primario agregar solo-edicion" type="button">➕ Agregar producto</button>
+  </main>
+</div>
+
+<div id="modal" class="fondo-modal" hidden></div>
+<div id="toast" class="toast" hidden role="status"></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const NUEVA = "__nueva__";
+  const TODAS = "__todas__";
+
+  let db = null, descargas = null;
+  let esEditor = false;     // permiso real: lo da el menú Compartir del artifact (Editor)
+  let puedeEditar = false;  // además, el editor entró con la contraseña
+  let editando = false, cargado = false;
+  // Candado simple para no tocar la lista por error: se pide la contraseña para editar.
+  const HASH_EDITOR = "9293ed9bfdb6d2756aa293f85c2f590b1bd756a4be6d4b0f12640503c4bad0df";
+  const CLAVE_EDITOR = "manantial.editor";
+  const CATALOGO_ORIGINAL = [{"nombre":"Quesos","productos":[{"id":"p001","nombre":"Cremoso Tres Estrellas","sub":"","mayorista":"8600","minorista":"","unidad":"kg","nota":""},{"id":"p002","nombre":"Cremoso Tío Pujio","sub":"","mayorista":"8300","minorista":"","unidad":"kg","nota":""},{"id":"p003","nombre":"Cremoso Arroyo Cabral","sub":"","mayorista":"9790","minorista":"1200 x 100","unidad":"kg","nota":""},{"id":"p004","nombre":"Cremoso Santa María","sub":"","mayorista":"8500","minorista":"8200 x reja","unidad":"kg","nota":""},{"id":"p005","nombre":"Cremoso 3 L","sub":"","mayorista":"8690","minorista":"","unidad":"kg","nota":""},{"id":"p006","nombre":"Cremoso LQueso","sub":"","mayorista":"8690","minorista":"","unidad":"kg","nota":""},{"id":"p007","nombre":"Port Salut","sub":"","mayorista":"10500","minorista":"","unidad":"kg","nota":""},{"id":"p008","nombre":"Cremón","sub":"","mayorista":"","minorista":"","unidad":"kg","nota":""},{"id":"p009","nombre":"Muzzarella","sub":"","mayorista":"9160","minorista":"1200 x 100","unidad":"kg","nota":""},{"id":"p010","nombre":"Barra Arroyo Cabral","sub":"","mayorista":"11650","minorista":"1400 x 100","unidad":"kg","nota":""},{"id":"p011","nombre":"Barra 3L","sub":"","mayorista":"11400","minorista":"","unidad":"kg","nota":""},{"id":"p012","nombre":"Barra LQueso","sub":"","mayorista":"10900","minorista":"","unidad":"kg","nota":""},{"id":"p013","nombre":"Barra Tío Pujio","sub":"","mayorista":"10400","minorista":"","unidad":"kg","nota":""},{"id":"p014","nombre":"Barra Aurora","sub":"","mayorista":"","minorista":"","unidad":"kg","nota":""},{"id":"p015","nombre":"Barra Santa María","sub":"","mayorista":"11000","minorista":"","unidad":"kg","nota":""},{"id":"p016","nombre":"Holanda Santa María","sub":"","mayorista":"16100","minorista":"2000 x 100","unidad":"kg","nota":""},{"id":"p017","nombre":"Holanda Arroyo Cabral","sub":"","mayorista":"16300","minorista":"1800 x 100","unidad":"kg","nota":""},{"id":"p018","nombre":"Fimbo Arroyo Cabral","sub":"","mayorista":"18800","minorista":"2200 x 100","unidad":"kg","nota":""},{"id":"p019","nombre":"Sardo fresco Tío Pujio","sub":"","mayorista":"13100","minorista":"","unidad":"kg","nota":""},{"id":"p020","nombre":"Sardo Don Osvaldo","sub":"","mayorista":"12500","minorista":"","unidad":"kg","nota":""},{"id":"p021","nombre":"Sardo Alma Láctea","sub":"","mayorista":"","minorista":"","unidad":"kg","nota":""},{"id":"p022","nombre":"Sardo JC","sub":"","mayorista":"16900","minorista":"","unidad":"kg","nota":""},{"id":"p023","nombre":"Sardo y Romanito Arroyo Cabral","sub":"","mayorista":"19300","minorista":"","unidad":"kg","nota":""},{"id":"p024","nombre":"Sardo Colonia Orcovi","sub":"","mayorista":"18800","minorista":"","unidad":"kg","nota":""},{"id":"p025","nombre":"Sardo Santa María","sub":"","mayorista":"16450","minorista":"","unidad":"kg","nota":""},{"id":"p026","nombre":"Sardo Negro Aurora","sub":"","mayorista":"15300","minorista":"","unidad":"kg","nota":""},{"id":"p027","nombre":"Sardo Negro Doble A","sub":"","mayorista":"","minorista":"","unidad":"kg","nota":""},{"id":"p028","nombre":"Sardo Tío Pujio","sub":"","mayorista":"16980","minorista":"","unidad":"kg","nota":""},{"id":"p029","nombre":"Reggianito Tío Pujio","sub":"","mayorista":"17930","minorista":"2500 x 100","unidad":"kg","nota":""},{"id":"p030","nombre":"Parmesano","sub":"","mayorista":"18700","minorista":"","unidad":"kg","nota":""},{"id":"p031","nombre":"Provolone x 2 unidades","sub":"","mayorista":"5500","minorista":"6500","unidad":"uni","nota":""},{"id":"p032","nombre":"Ricota","sub":"","mayorista":"4900","minorista":"5000","unidad":"kg","nota":""},{"id":"p033","nombre":"Roquefort","sub":"","mayorista":"15800","minorista":"2000 x 100","unidad":"kg","nota":""}]},{"nombre":"Lácteos","productos":[{"id":"p034","nombre":"Grasa 500gr","sub":"","mayorista":"3650","minorista":"4000","unidad":"uni","nota":""},{"id":"p035","nombre":"Levadura 500gr","sub":"","mayorista":"5500","minorista":"","unidad":"uni","nota":""},{"id":"p036","nombre":"Levadura en sobrecito ind. y 50gr","sub":"","mayorista":"750 / 400","minorista":"1000","unidad":"uni","nota":""},{"id":"p037","nombre":"Manteca x100","sub":"","mayorista":"1160","minorista":"1500","unidad":"uni","nota":""},{"id":"p038","nombre":"Manteca x200","sub":"","mayorista":"2250","minorista":"2500","unidad":"uni","nota":""},{"id":"p039","nombre":"Manteca La Serenísima x200","sub":"","mayorista":"4100","minorista":"4600","unidad":"uni","nota":""},{"id":"p040","nombre":"Margadan x200","sub":"","mayorista":"1450","minorista":"2000","unidad":"uni","nota":""},{"id":"p041","nombre":"Danica x200 (pote)","sub":"","mayorista":"1900","minorista":"2300","unidad":"uni","nota":""},{"id":"p042","nombre":"Crema de leche Sta Maria x200","sub":"","mayorista":"2050","minorista":"2500","unidad":"uni","nota":""},{"id":"p043","nombre":"Crema de leche Ilolay x200","sub":"","mayorista":"2050","minorista":"2500","unidad":"uni","nota":""},{"id":"p044","nombre":"Crema de leche Ilolay x400","sub":"","mayorista":"3210","minorista":"4000","unidad":"uni","nota":""},{"id":"p045","nombre":"Dulce de leche Ilolay x200","sub":"","mayorista":"1750","minorista":"2000","unidad":"uni","nota":""},{"id":"p046","nombre":"Dulce de leche Ilolay x400","sub":"","mayorista":"3250","minorista":"3500","unidad":"uni","nota":""},{"id":"p047","nombre":"Dulce de leche x200 Santa Maria","sub":"","mayorista":"1350","minorista":"1600","unidad":"uni","nota":""},{"id":"p048","nombre":"Dulce de leche x400 Santa Maria","sub":"","mayorista":"2300","minorista":"2700","unidad":"uni","nota":""},{"id":"p049","nombre":"Dulce de leche repostero x400 LS","sub":"","mayorista":"3800","minorista":"4500","unidad":"uni","nota":""},{"id":"p050","nombre":"Dulce de leche La Serenísima x400","sub":"","mayorista":"3200","minorista":"3500","unidad":"uni","nota":""},{"id":"p051","nombre":"Ralladito La Quesera 40gr","sub":"","mayorista":"750","minorista":"1000","unidad":"uni","nota":""},{"id":"p052","nombre":"Ralladito Ilolay 40gr","sub":"","mayorista":"1800","minorista":"2000","unidad":"uni","nota":""},{"id":"p053","nombre":"Ralladito La Serenísima 30gr","sub":"","mayorista":"1700","minorista":"2000","unidad":"uni","nota":""},{"id":"p054","nombre":"Leche larga vida entera/desc","sub":"","mayorista":"2100","minorista":"2300","unidad":"uni","nota":""},{"id":"p055","nombre":"Chocolatada Ilolay x1Lt","sub":"","mayorista":"2900","minorista":"3200","unidad":"uni","nota":""},{"id":"p056","nombre":"Postre y flan Ilolay","sub":"","mayorista":"1200","minorista":"1500","unidad":"uni","nota":""},{"id":"p057","nombre":"Yogurt 125 Ilolay","sub":"","mayorista":"800","minorista":"1800 x2","unidad":"uni","nota":""},{"id":"p058","nombre":"Yogurt vasito 125 Santa Maria","sub":"","mayorista":"700","minorista":"900","unidad":"uni","nota":""},{"id":"p059","nombre":"Yogurt con cereal Ilolay","sub":"","mayorista":"1750","minorista":"2000","unidad":"uni","nota":""},{"id":"p060","nombre":"Postre con rocklet","sub":"","mayorista":"2180","minorista":"2500","unidad":"uni","nota":""},{"id":"p061","nombre":"Yogurt Ilolay de litro","sub":"","mayorista":"2050","minorista":"2400","unidad":"uni","nota":""},{"id":"p062","nombre":"Tonadita cheddar/azul/provolone","sub":"","mayorista":"2500","minorista":"2800","unidad":"uni","nota":""},{"id":"p063","nombre":"Tonadita muzzarella/dambo","sub":"","mayorista":"","minorista":"2800","unidad":"uni","nota":""},{"id":"p064","nombre":"Queso untable x200 Ilolay","sub":"","mayorista":"2400","minorista":"2700","unidad":"uni","nota":""},{"id":"p065","nombre":"Queso untable x400 Ilolay y Paulina","sub":"","mayorista":"3200","minorista":"3500","unidad":"uni","nota":""}]},{"nombre":"Fiambres","productos":[{"id":"p066","nombre":"Bocha 42","sub":"","mayorista":"12500","minorista":"","unidad":"kg","nota":""},{"id":"p067","nombre":"Bocha Recreo y Pelayo","sub":"","mayorista":"8100","minorista":"","unidad":"kg","nota":""},{"id":"p068","nombre":"Bocha Fox","sub":"Pelayo c/ pistacho","mayorista":"11200","minorista":"","unidad":"kg","nota":""},{"id":"p069","nombre":"Bocha Calchaquí","sub":"","mayorista":"11900","minorista":"","unidad":"kg","nota":""},{"id":"p070","nombre":"Bocha Paladini","sub":"","mayorista":"11900","minorista":"","unidad":"kg","nota":""},{"id":"p071","nombre":"Mortadela Cilindro","sub":"","mayorista":"5900","minorista":"","unidad":"kg","nota":""},{"id":"p072","nombre":"Queso de Cerdo MM","sub":"","mayorista":"6990","minorista":"","unidad":"kg","nota":"Avenida 5000"},{"id":"p073","nombre":"Queso de cerdo cuadrado","sub":"","mayorista":"4850","minorista":"","unidad":"kg","nota":""},{"id":"p074","nombre":"Queso Cerdo Fox","sub":"","mayorista":"7150","minorista":"","unidad":"kg","nota":""},{"id":"p075","nombre":"Salchichón Fox","sub":"","mayorista":"7410","minorista":"","unidad":"kg","nota":""},{"id":"p076","nombre":"Salchichón Primavera/Jamón Sip","sub":"","mayorista":"6300","minorista":"","unidad":"kg","nota":""},{"id":"p077","nombre":"Salchicha x 6 Fela","sub":"","mayorista":"1350","minorista":"1500","unidad":"uni","nota":""},{"id":"p078","nombre":"Salchicha x 6 Carcarañá","sub":"","mayorista":"1100","minorista":"1400","unidad":"uni","nota":""},{"id":"p079","nombre":"Salchicha x 6 Otto","sub":"","mayorista":"985","minorista":"1200","unidad":"uni","nota":""},{"id":"p080","nombre":"Salchichas pancheras","sub":"","mayorista":"5300","minorista":"","unidad":"kg","nota":""},{"id":"p081","nombre":"Salame Milán Lario","sub":"","mayorista":"18400","minorista":"","unidad":"kg","nota":""},{"id":"p082","nombre":"Salame Milán 66","sub":"","mayorista":"11700","minorista":"","unidad":"kg","nota":""},{"id":"p083","nombre":"Salame Milán Recreo","sub":"","mayorista":"14700","minorista":"","unidad":"kg","nota":""},{"id":"p084","nombre":"Salame Milán Fox","sub":"","mayorista":"14600","minorista":"","unidad":"kg","nota":""},{"id":"p085","nombre":"Salame Milán Chacra y Pelayo","sub":"","mayorista":"13500","minorista":"","unidad":"kg","nota":""},{"id":"p086","nombre":"Salame Milán Cagnoli","sub":"","mayorista":"18900","minorista":"2400 x 100","unidad":"kg","nota":""},{"id":"p087","nombre":"Salame Milán Cate y Otto","sub":"","mayorista":"9300","minorista":"","unidad":"kg","nota":""},{"id":"p088","nombre":"Salamines Avenida pic fino y grueso","sub":"","mayorista":"13900","minorista":"1800 x 100","unidad":"kg","nota":""},{"id":"p089","nombre":"Salamines pic grueso Otto","sub":"","mayorista":"14900","minorista":"1800 x 100","unidad":"kg","nota":""},{"id":"p090","nombre":"Salamines pic fino Otto","sub":"","mayorista":"14900","minorista":"1800 x 100","unidad":"kg","nota":""},{"id":"p091","nombre":"Salamines Fox fino/grueso","sub":"","mayorista":"19700","minorista":"2500 x 100","unidad":"kg","nota":""},{"id":"p092","nombre":"Salame Bastón Cagnoli","sub":"","mayorista":"23700","minorista":"","unidad":"kg","nota":""},{"id":"p093","nombre":"Salame bastón Fox","sub":"","mayorista":"18700","minorista":"","unidad":"kg","nota":""},{"id":"p094","nombre":"Salame bastón MM pic fino","sub":"","mayorista":"12800","minorista":"","unidad":"kg","nota":""},{"id":"p095","nombre":"Salame bastón MM pic grueso","sub":"","mayorista":"13300","minorista":"","unidad":"kg","nota":""},{"id":"p096","nombre":"Longaniza","sub":"","mayorista":"17500","minorista":"2000 x 100","unidad":"kg","nota":"Pelayo 13200"},{"id":"p097","nombre":"Chorizo Colorado","sub":"","mayorista":"11900","minorista":"1600 x 100","unidad":"kg","nota":""},{"id":"p098","nombre":"Panceta Salada Tacural","sub":"","mayorista":"18800","minorista":"","unidad":"kg","nota":""},{"id":"p099","nombre":"Panceta Salada Casa del cerdo","sub":"","mayorista":"14500","minorista":"","unidad":"kg","nota":""},{"id":"p100","nombre":"Panceta Ahumada Cagnoli","sub":"","mayorista":"20600","minorista":"","unidad":"kg","nota":""},{"id":"p101","nombre":"Paleta SIP x 6kg","sub":"","mayorista":"5250","minorista":"","unidad":"kg","nota":""},{"id":"p102","nombre":"Paleta Recreo","sub":"","mayorista":"8100","minorista":"","unidad":"kg","nota":""},{"id":"p103","nombre":"Paleta Lario","sub":"","mayorista":"","minorista":"","unidad":"kg","nota":""},{"id":"p104","nombre":"Paleta Trozer","sub":"","mayorista":"7290","minorista":"","unidad":"kg","nota":""},{"id":"p105","nombre":"Paleta Cagnoli","sub":"","mayorista":"9200","minorista":"","unidad":"kg","nota":""},{"id":"p106","nombre":"Paleta Fox","sub":"","mayorista":"8100","minorista":"","unidad":"kg","nota":""},{"id":"p107","nombre":"Jamón cocido Trozer","sub":"","mayorista":"10900","minorista":"","unidad":"kg","nota":""},{"id":"p108","nombre":"Jamón cocido 266","sub":"","mayorista":"10100","minorista":"","unidad":"kg","nota":""},{"id":"p109","nombre":"Jamón cocido Don Antonino","sub":"","mayorista":"10300","minorista":"","unidad":"kg","nota":""},{"id":"p110","nombre":"Jamón cocido Cagnoli","sub":"","mayorista":"12900","minorista":"1800 x 100","unidad":"kg","nota":""},{"id":"p111","nombre":"Jamón cocido Genuino","sub":"","mayorista":"13800","minorista":"","unidad":"kg","nota":""},{"id":"p112","nombre":"Jamón crudo","sub":"","mayorista":"21300","minorista":"","unidad":"kg","nota":""},{"id":"p113","nombre":"Bondiola","sub":"","mayorista":"20100","minorista":"","unidad":"kg","nota":""}]},{"nombre":"Congelados y pastas","productos":[{"id":"p114","nombre":"Empanada Económica","sub":"","mayorista":"1100","minorista":"1500","unidad":"uni","nota":""},{"id":"p115","nombre":"Pascualina Económica","sub":"","mayorista":"1100","minorista":"1500","unidad":"uni","nota":""},{"id":"p116","nombre":"Pascualina Amici","sub":"","mayorista":"1430","minorista":"1700","unidad":"uni","nota":""},{"id":"p117","nombre":"Empanada Amici","sub":"","mayorista":"1230","minorista":"1500","unidad":"uni","nota":""},{"id":"p118","nombre":"Ravioles/Capeletti Amici 400gr","sub":"","mayorista":"1750","minorista":"2100","unidad":"uni","nota":""},{"id":"p119","nombre":"Pascualina Italiana","sub":"","mayorista":"1850","minorista":"2200","unidad":"uni","nota":""},{"id":"p120","nombre":"Empanada Italiana","sub":"","mayorista":"1380","minorista":"1700","unidad":"uni","nota":""},{"id":"p121","nombre":"Ravioles 500gr La Italiana","sub":"","mayorista":"2500","minorista":"3000","unidad":"uni","nota":""},{"id":"p122","nombre":"Raviol Italiana jamón/4 quesos 500","sub":"","mayorista":"2500","minorista":"3000","unidad":"uni","nota":""},{"id":"p123","nombre":"Fideos La Italiana x 500gr","sub":"","mayorista":"2450","minorista":"2900","unidad":"uni","nota":""},{"id":"p124","nombre":"Ñoqui La Italiana x 500gr","sub":"","mayorista":"2050","minorista":"2500","unidad":"uni","nota":""},{"id":"p125","nombre":"Ñoqui La Italiana x 1kg","sub":"","mayorista":"3470","minorista":"4200","unidad":"uni","nota":""},{"id":"p126","nombre":"Ravioles/Capelletti La Italiana 1kg","sub":"","mayorista":"4250","minorista":"5100","unidad":"uni","nota":""},{"id":"p127","nombre":"Hamburguesas Swift","sub":"","mayorista":"75700","minorista":"","unidad":"uni","nota":"Caja"},{"id":"p128","nombre":"Hamburguesas Burger","sub":"","mayorista":"","minorista":"","unidad":"uni","nota":""}]},{"nombre":"Varios","productos":[{"id":"p129","nombre":"Pan Rallado x 5kg","sub":"","mayorista":"10300","minorista":"","unidad":"uni","nota":""},{"id":"p130","nombre":"Pancho x 6 y Hamburguesa Brizuela","sub":"","mayorista":"1300","minorista":"1500","unidad":"uni","nota":""},{"id":"p131","nombre":"Pizza x 3","sub":"","mayorista":"2000","minorista":"2500","unidad":"uni","nota":""},{"id":"p132","nombre":"Rebanado Brizuela","sub":"","mayorista":"1350","minorista":"1600","unidad":"uni","nota":""},{"id":"p133","nombre":"Miga x 100","sub":"","mayorista":"","minorista":"","unidad":"uni","nota":""},{"id":"p134","nombre":"Tostada","sub":"","mayorista":"7000","minorista":"9000","unidad":"uni","nota":""},{"id":"p135","nombre":"Salsa Grande","sub":"","mayorista":"14000","minorista":"2000","unidad":"uni","nota":""},{"id":"p136","nombre":"Salsa Mediana","sub":"","mayorista":"","minorista":"","unidad":"uni","nota":""},{"id":"p137","nombre":"Salsa Chica","sub":"","mayorista":"14000","minorista":"1200","unidad":"uni","nota":""},{"id":"p138","nombre":"Puré de tomate x 500gr","sub":"","mayorista":"900","minorista":"1200","unidad":"uni","nota":""},{"id":"p139","nombre":"Batata vainilla en lata","sub":"","mayorista":"17000","minorista":"","unidad":"uni","nota":""},{"id":"p140","nombre":"Batata chocolate en lata","sub":"","mayorista":"18000","minorista":"","unidad":"uni","nota":""},{"id":"p141","nombre":"Batata cajón 5 kg","sub":"","mayorista":"14000","minorista":"3000 kg x ½ cajón","unidad":"uni","nota":""},{"id":"p142","nombre":"Membrillo rojo cajón x 5kg","sub":"","mayorista":"14500","minorista":"3200 kg x ½ cajón","unidad":"uni","nota":""},{"id":"p143","nombre":"Membrillo rubio cajón x 5kg","sub":"","mayorista":"15000","minorista":"3500 kg x ½ cajón","unidad":"uni","nota":"4000 kg"},{"id":"p144","nombre":"Galleta 3kg","sub":"","mayorista":"11800","minorista":"","unidad":"uni","nota":""},{"id":"p145","nombre":"Galleta de miel","sub":"","mayorista":"1800","minorista":"2000","unidad":"uni","nota":""},{"id":"p146","nombre":"Palito Salado","sub":"","mayorista":"5500","minorista":"","unidad":"uni","nota":""},{"id":"p147","nombre":"Maní Salado Mamá","sub":"","mayorista":"4800","minorista":"","unidad":"uni","nota":""},{"id":"p148","nombre":"Maní Saborizado Mamá","sub":"","mayorista":"5800","minorista":"","unidad":"uni","nota":""},{"id":"p149","nombre":"Maní Tostado x 1kg","sub":"","mayorista":"","minorista":"","unidad":"uni","nota":""},{"id":"p150","nombre":"Papas Sure 1kg","sub":"","mayorista":"18000","minorista":"","unidad":"uni","nota":""},{"id":"p151","nombre":"Papas Mamá 1kg","sub":"","mayorista":"14500","minorista":"","unidad":"uni","nota":""},{"id":"p152","nombre":"Papas Saborizadas Mamá 1kg","sub":"","mayorista":"15500","minorista":"","unidad":"uni","nota":""},{"id":"p153","nombre":"Chisitos 1kg","sub":"","mayorista":"3800","minorista":"","unidad":"uni","nota":""},{"id":"p154","nombre":"Conito x 800gr","sub":"","mayorista":"6800","minorista":"","unidad":"uni","nota":""},{"id":"p155","nombre":"Cebollita","sub":"","mayorista":"","minorista":"","unidad":"uni","nota":""},{"id":"p156","nombre":"Panceta","sub":"","mayorista":"","minorista":"","unidad":"uni","nota":""},{"id":"p157","nombre":"Tutucas","sub":"","mayorista":"1200","minorista":"","unidad":"uni","nota":""},{"id":"p158","nombre":"Cascarón / tirabuzón","sub":"","mayorista":"6100","minorista":"","unidad":"uni","nota":""},{"id":"p159","nombre":"Anchoas","sub":"","mayorista":"5000","minorista":"6000","unidad":"uni","nota":""},{"id":"p160","nombre":"Aceite x 900cc Natura","sub":"","mayorista":"4400","minorista":"5000","unidad":"uni","nota":""},{"id":"p161","nombre":"Citric 1,5 Lt","sub":"","mayorista":"5450","minorista":"6000","unidad":"uni","nota":""},{"id":"p162","nombre":"Citric 1 Lt","sub":"","mayorista":"4150","minorista":"4500","unidad":"uni","nota":""},{"id":"p163","nombre":"Citric x 500","sub":"","mayorista":"2450","minorista":"2800","unidad":"uni","nota":""},{"id":"p164","nombre":"Citric x 3 Lt","sub":"","mayorista":"","minorista":"","unidad":"uni","nota":""},{"id":"p165","nombre":"Citric x 5 Lt","sub":"","mayorista":"","minorista":"","unidad":"uni","nota":""}]},{"nombre":"Condimentos y salsas","productos":[{"id":"p166","nombre":"Mayonesa x 125 Natura","sub":"","mayorista":"750","minorista":"1000","unidad":"uni","nota":""},{"id":"p167","nombre":"Mayonesa x 250 Natura","sub":"","mayorista":"1700","minorista":"2000","unidad":"uni","nota":""},{"id":"p168","nombre":"Salsa Golf x 125gs","sub":"","mayorista":"1100","minorista":"1500","unidad":"uni","nota":""},{"id":"p169","nombre":"Kepchup x 50gs","sub":"","mayorista":"400","minorista":"500","unidad":"uni","nota":""},{"id":"p170","nombre":"Mayonesa x 3kg","sub":"","mayorista":"10500","minorista":"","unidad":"uni","nota":""},{"id":"p171","nombre":"Salsa golf x 3kg","sub":"","mayorista":"11100","minorista":"","unidad":"uni","nota":""},{"id":"p172","nombre":"Ketchup x 3kg","sub":"","mayorista":"10450","minorista":"","unidad":"uni","nota":""},{"id":"p173","nombre":"Mostaza Dánica","sub":"","mayorista":"7900","minorista":"","unidad":"uni","nota":""},{"id":"p174","nombre":"Caldo Saborizar","sub":"","mayorista":"3800","minorista":"500","unidad":"uni","nota":""},{"id":"p175","nombre":"Pimienta Negra","sub":"","mayorista":"1200","minorista":"1500","unidad":"uni","nota":""},{"id":"p176","nombre":"Pimienta Blanca","sub":"","mayorista":"1550","minorista":"1800","unidad":"uni","nota":""},{"id":"p177","nombre":"Orégano","sub":"","mayorista":"1250","minorista":"1500","unidad":"uni","nota":""},{"id":"p178","nombre":"Ají Triturado","sub":"","mayorista":"800","minorista":"1000","unidad":"uni","nota":""},{"id":"p179","nombre":"Pimentón 50gs","sub":"","mayorista":"850","minorista":"1000","unidad":"uni","nota":""},{"id":"p180","nombre":"Provenzal 25gr","sub":"","mayorista":"1150","minorista":"1300","unidad":"uni","nota":""},{"id":"p181","nombre":"Chimichurri","sub":"","mayorista":"1100","minorista":"1300","unidad":"uni","nota":""},{"id":"p182","nombre":"Condimento pizza, arroz, tuco","sub":"","mayorista":"900","minorista":"1200","unidad":"uni","nota":""},{"id":"p183","nombre":"Condimento Milanesa","sub":"","mayorista":"900","minorista":"1200","unidad":"uni","nota":""},{"id":"p184","nombre":"Nuez Moscada","sub":"","mayorista":"","minorista":"","unidad":"uni","nota":""},{"id":"p185","nombre":"Ajo","sub":"","mayorista":"","minorista":"1300","unidad":"uni","nota":""},{"id":"p186","nombre":"Condimento para carnes","sub":"","mayorista":"1000","minorista":"1200","unidad":"uni","nota":""},{"id":"p187","nombre":"Condimento para empanadas","sub":"","mayorista":"500","minorista":"500","unidad":"uni","nota":""}]}];
+  const svg = (t) => `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${t}</svg>`;
+  const OJO = svg(`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>`);
+  const OJO_TACHADO = svg(`<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/>`);
+  let cats = [];            // [{id, nombre, orden, productos:[{id,nombre,sub,mayorista,minorista,unidad,nota}]}]
+  let catActiva = TODAS, busqueda = "", ordenCol = null, ordenDir = "desc";
+  let ultimaActualizacion = null, renderPendiente = false;
+  const sucias = new Set(), cadenas = new Map(), temporizadores = new Map();
+
+  // ---------- utilidades ----------
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const sinAcentos = (s) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  const uid = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3);
+  const clonar = (x) => JSON.parse(JSON.stringify(x));
+  function aviso(msg) {
+    const t = $("toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(aviso.t); aviso.t = setTimeout(() => (t.hidden = true), 3200);
+  }
+  function errorDb(e) {
+    const c = e && e.code;
+    if (c === "invalid_argument") aviso("No tenés permiso para cambiar la lista.");
+    else if (c === "resource_exhausted") aviso("Demasiados cambios seguidos. Esperá un momento.");
+    else aviso("No se pudo guardar. Probá de nuevo.");
+  }
+  function formatearPrecio(valor, unidad) {
+    const v = String(valor ?? "").trim();
+    if (!v) return "";
+    if (/^\d+([.,]\d+)?$/.test(v)) return "$ " + Number(v.replace(",", ".")).toLocaleString("es-AR") + (unidad ? " " + unidad : "");
+    return v.replace(/^(\d+)/, (n) => "$ " + Number(n).toLocaleString("es-AR"));
+  }
+  function valorNumerico(v) {
+    const m = String(v ?? "").trim().match(/^\d+([.,]\d+)?/);
+    return m ? Number(m[0].replace(",", ".")) : null;
+  }
+  const catPorId = (id) => cats.find((c) => c.id === id);
+  const nombresCats = () => cats.map((c) => c.nombre);
+
+  // ---------- modal propio (no hay alert/confirm en el visor) ----------
+  function abrirModal(html) { $("modal").innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`; $("modal").hidden = false; }
+  function cerrarModal() { $("modal").hidden = true; $("modal").innerHTML = ""; }
+  function confirmar(titulo, texto, textoBoton) {
+    return new Promise((res) => {
+      abrirModal(`<h2>${esc(titulo)}</h2><p>${esc(texto)}</p><div class="pie"><button class="btn" id="cfNo" type="button">Cancelar</button><button class="btn primario" id="cfSi" type="button">${esc(textoBoton || "Aceptar")}</button></div>`);
+      $("cfNo").onclick = () => { cerrarModal(); res(false); };
+      $("cfSi").onclick = () => { cerrarModal(); res(true); };
+    });
+  }
+  $("modal").addEventListener("click", (e) => { if (e.target === $("modal")) { cerrarModal(); if (!editando) renderTabla(); } });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("modal").hidden) { cerrarModal(); renderTabla(); } });
+
+  // ---------- escritura ----------
+  // Cada categoría es un documento con la lista de sus productos. Se escribe de a una por vez.
+  function guardarCat(c, inmediato) {
+    sucias.add(c.id);
+    clearTimeout(temporizadores.get(c.id));
+    const ir = () => {
+      temporizadores.delete(c.id);
+      const productos = clonar(c.productos);
+      const previa = cadenas.get(c.id) || Promise.resolve();
+      cadenas.set(c.id, previa
+        .then(() => db.doc("categorias/" + c.id).update({ productos, actualizado: new Date().toISOString() }))
+        .catch(errorDb)
+        .then(() => { if (!temporizadores.has(c.id)) sucias.delete(c.id); }));
+    };
+    if (inmediato) ir(); else temporizadores.set(c.id, setTimeout(ir, 500));
+  }
+  function nuevaCatDoc(nombre) {
+    const orden = cats.reduce((m, c) => Math.max(m, c.orden || 0), 0) + 1;
+    const c = { id: "c" + uid(), nombre, orden, productos: [] };
+    cats.push(c);
+    db.doc("categorias/" + c.id).set({ nombre, orden, productos: [] }).catch(errorDb);
+    return c;
+  }
+  function unidadPorDefecto(nombreCat) { return nombreCat === "Quesos" || nombreCat === "Fiambres" ? "kg" : "uni"; }
+
+  // ---------- render ----------
+  function itemsVisibles() {
+    const q = sinAcentos(busqueda.trim());
+    let items = cats.flatMap((c) => c.productos.map((p) => ({ p, c })));
+    items = items.filter(({ p, c }) =>
+      (q || catActiva === TODAS || c.id === catActiva) &&
+      (!q || sinAcentos(p.nombre + " " + p.sub + " " + p.nota).includes(q)));
+    if (ordenCol === "nombre") {
+      // alfabético, sin distinguir mayúsculas ni acentos
+      const s = ordenDir === "desc" ? -1 : 1;
+      items.sort((a, b) => s * a.p.nombre.localeCompare(b.p.nombre, "es", { sensitivity: "base", numeric: true }));
+    } else if (ordenCol) {
+      const s = ordenDir === "desc" ? -1 : 1;
+      items.sort((a, b) => {
+        const x = valorNumerico(a.p[ordenCol]), y = valorNumerico(b.p[ordenCol]);
+        if (x === null && y === null) return 0;
+        if (x === null) return 1;
+        if (y === null) return -1;
+        return (x - y) * s;
+      });
+    }
+    return items;
+  }
+  function filaVista({ p }) {
+    const celda = (v, cls) => { const f = formatearPrecio(v, p.unidad); return `<td class="precio ${cls}${f ? "" : " sin"}">${f || "—"}</td>`; };
+    return `<tr><td class="nombre">${esc(p.nombre)}${p.sub ? `<small class="sub">${esc(p.sub)}</small>` : ""}</td>${celda(p.mayorista, "mayo")}${celda(p.minorista, "mino")}<td class="nota">${esc(p.nota)}</td></tr>`;
+  }
+  function filaEdicion({ p, c }) {
+    const optCat = cats.map((x) => `<option value="${x.id}" ${x.id === c.id ? "selected" : ""}>${esc(x.nombre)}</option>`).join("") + `<option value="${NUEVA}">➕ Nueva categoría…</option>`;
+    return `<tr data-c="${c.id}" data-p="${p.id}">
+      <td class="nombre"><input data-campo="nombre" value="${esc(p.nombre)}" placeholder="Producto" aria-label="Producto"><input class="sub-input" data-campo="sub" value="${esc(p.sub)}" placeholder="Sub descripción (opcional)" aria-label="Sub descripción"></td>
+      <td class="precio mayo"><input data-campo="mayorista" value="${esc(p.mayorista)}" placeholder="Mayorista" aria-label="Precio mayorista"></td>
+      <td class="precio mino"><input data-campo="minorista" value="${esc(p.minorista)}" placeholder="Minorista" aria-label="Precio minorista"></td>
+      <td class="nota"><input data-campo="nota" value="${esc(p.nota)}" placeholder="Nota" aria-label="Nota"></td>
+      <td class="acc solo-edicion">
+        <select data-campo="categoria" aria-label="Categoría">${optCat}</select>
+        <select data-campo="unidad" aria-label="Se vende por"><option value="kg" ${p.unidad === "kg" ? "selected" : ""}>por kg</option><option value="uni" ${p.unidad === "uni" ? "selected" : ""}>por unidad</option></select>
+        <button class="btn-fila" type="button" data-borrar="1" aria-label="Eliminar producto">🗑️ Eliminar</button>
+      </td></tr>`;
+  }
+  function renderTabs() {
+    const total = cats.reduce((n, c) => n + c.productos.length, 0);
+    const t = [`<button class="tab ${catActiva === TODAS ? "activa" : ""}" type="button" data-cat="${TODAS}">Todas<span class="n">${total}</span></button>`]
+      .concat(cats.map((c) => `<button class="tab ${catActiva === c.id ? "activa" : ""}" type="button" data-cat="${c.id}">${esc(c.nombre)}<span class="n">${c.productos.length}</span></button>`));
+    if (editando) t.push(`<button class="tab nueva" type="button" data-nueva="1">➕ Nueva categoría</button>`);
+    $("tabs").innerHTML = t.join("");
+  }
+  function renderOrden() {
+    document.querySelectorAll(".orden").forEach((b) => {
+      const act = b.dataset.orden === ordenCol;
+      b.classList.toggle("activo", act);
+      if (b.dataset.orden === "nombre") {
+        b.querySelector(".flecha").textContent = !act ? "⇅" : ordenDir === "asc" ? "▲" : "▼";
+        b.title = !act ? "Ordenar de la A a la Z" : ordenDir === "asc" ? "De la A a la Z (tocá para invertir)" : "De la Z a la A (tocá para quitar el orden)";
+        return;
+      }
+      b.querySelector(".flecha").textContent = !act ? "⇅" : ordenDir === "desc" ? "▼" : "▲";
+      b.title = !act ? "Ordenar de mayor a menor" : ordenDir === "desc" ? "De mayor a menor (tocá para invertir)" : "De menor a mayor (tocá para quitar el orden)";
+    });
+  }
+  function renderTabla() {
+    renderPendiente = false;
+    renderTabs(); renderOrden();
+    if (!cargado) return;
+    const items = itemsVisibles();
+    const hayAlgo = cats.some((c) => c.productos.length);
+    $("estado").hidden = items.length > 0 || false;
+    $("contenedorTabla").hidden = items.length === 0 && !editando;
+    if (!items.length) {
+      $("estado").hidden = false;
+      $("estado").innerHTML = hayAlgo
+        ? `<h2>Sin resultados</h2><p>No hay productos para mostrar.</p>`
+        : `<h2>La lista está vacía</h2><p>${puedeEditar ? "Tocá Editar y agregá el primer producto." : "Todavía no se cargaron productos."}</p>`;
+    }
+    $("tabla").classList.toggle("sin-notas", !editando && !items.some(({ p }) => p.nota));
+    let html = "";
+    const fila = editando ? filaEdicion : filaVista;
+    if (catActiva === TODAS && !busqueda.trim() && !ordenCol) {
+      cats.forEach((c) => {
+        const propios = items.filter((i) => i.c === c);
+        if (!propios.length) return;
+        html += `<tr class="cat-fila"><td colspan="5">${esc(c.nombre)}</td></tr>` + propios.map(fila).join("");
+      });
+    } else html = items.map(fila).join("");
+    $("cuerpo").innerHTML = html;
+    $("actualizado").textContent = ultimaActualizacion ? "Actualizado: " + new Date(ultimaActualizacion).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "";
+  }
+  function pedirRender() {
+    // no rehacer la tabla mientras se escribe: se pierde el foco
+    const a = document.activeElement;
+    if (editando && a && a.closest && a.closest("#cuerpo")) { renderPendiente = true; renderTabs(); return; }
+    renderTabla();
+  }
+  document.addEventListener("focusout", () => { if (renderPendiente) setTimeout(() => { const a = document.activeElement; if (!(a && a.closest && a.closest("#cuerpo"))) renderTabla(); }, 0); });
+
+  // ---------- eventos de la tabla ----------
+  $("buscar").addEventListener("input", (e) => { busqueda = e.target.value; renderTabla(); });
+  $("tabs").addEventListener("click", (e) => {
+    const b = e.target.closest(".tab"); if (!b) return;
+    if (b.dataset.nueva) return dialogoNuevaCat(null);
+    catActiva = b.dataset.cat; renderTabla();
+  });
+  document.querySelector("thead").addEventListener("click", (e) => {
+    const b = e.target.closest(".orden"); if (!b) return;
+    const col = b.dataset.orden;
+    // Producto: A→Z, Z→A, sin orden. Precios: mayor→menor, menor→mayor, sin orden.
+    const primero = col === "nombre" ? "asc" : "desc", segundo = col === "nombre" ? "desc" : "asc";
+    if (ordenCol !== col) { ordenCol = col; ordenDir = primero; } else if (ordenDir === primero) ordenDir = segundo; else ordenCol = null;
+    renderTabla();
+  });
+  $("btnEditar").addEventListener("click", () => {
+    if (!puedeEditar) return;
+    editando = !editando;
+    document.body.classList.toggle("editando", editando);
+    $("btnEditar").textContent = editando ? "✅ Listo" : "✏️ Editar";
+    $("aviso").hidden = !editando;
+    renderTabla();
+  });
+  $("cuerpo").addEventListener("input", (e) => {
+    const campo = e.target.dataset.campo; if (!campo || e.target.tagName === "SELECT") return;
+    const tr = e.target.closest("tr"), c = catPorId(tr.dataset.c); if (!c) return;
+    const p = c.productos.find((x) => x.id === tr.dataset.p); if (!p) return;
+    p[campo] = e.target.value;
+    ultimaActualizacion = new Date().toISOString();
+    guardarCat(c);
+  });
+  $("cuerpo").addEventListener("change", (e) => {
+    const campo = e.target.dataset.campo;
+    const tr = e.target.closest("tr");
+    if (campo === "unidad") {
+      const c = catPorId(tr.dataset.c), p = c && c.productos.find((x) => x.id === tr.dataset.p);
+      if (p) { p.unidad = e.target.value; ultimaActualizacion = new Date().toISOString(); guardarCat(c, true); }
+      return;
+    }
+    if (campo !== "categoria") return;
+    if (e.target.value === NUEVA) return dialogoNuevaCat({ c: tr.dataset.c, p: tr.dataset.p });
+    moverProducto(tr.dataset.c, tr.dataset.p, e.target.value);
+  });
+  $("cuerpo").addEventListener("click", async (e) => {
+    if (!e.target.closest("[data-borrar]")) return;
+    const tr = e.target.closest("tr"), c = catPorId(tr.dataset.c); if (!c) return;
+    const p = c.productos.find((x) => x.id === tr.dataset.p); if (!p) return;
+    if (!(await confirmar("Eliminar producto", `¿Eliminar "${p.nombre || "este producto"}"?`, "Eliminar"))) return;
+    c.productos = c.productos.filter((x) => x.id !== p.id);
+    guardarCat(c, true); renderTabla();
+  });
+  function moverProducto(idOrigen, idProd, idDestino) {
+    const o = catPorId(idOrigen), d = catPorId(idDestino); if (!o || !d || o === d) return renderTabla();
+    const i = o.productos.findIndex((x) => x.id === idProd); if (i < 0) return;
+    const [p] = o.productos.splice(i, 1);
+    d.productos.push(p);
+    guardarCat(o, true); guardarCat(d, true); renderTabla();
+  }
+  $("btnAgregar").addEventListener("click", () => {
+    const c = catActiva !== TODAS && catPorId(catActiva) ? catPorId(catActiva) : cats[0];
+    if (!c) return aviso("Primero creá una categoría.");
+    const p = { id: "p" + uid(), nombre: "", sub: "", mayorista: "", minorista: "", unidad: unidadPorDefecto(c.nombre), nota: "" };
+    c.productos.push(p);
+    busqueda = ""; $("buscar").value = ""; if (catActiva === TODAS) catActiva = c.id;
+    guardarCat(c, true); renderTabla();
+    const inp = document.querySelector(`#cuerpo tr[data-p="${p.id}"] input`);
+    if (inp) { inp.scrollIntoView({ block: "center" }); inp.focus(); }
+  });
+
+  // ---------- nueva categoría ----------
+  function dialogoNuevaCat(mover) {
+    abrirModal(`<h2>Nueva categoría</h2><label for="ncNombre">Nombre</label><input id="ncNombre" placeholder="Ej: Bebidas" autocomplete="off"><div class="pie"><button class="btn" id="ncNo" type="button">Cancelar</button><button class="btn primario" id="ncSi" type="button">Crear</button></div>`);
+    $("ncNombre").focus();
+    const crear = () => {
+      const nombre = $("ncNombre").value.trim();
+      if (!nombre) return aviso("Escribí un nombre.");
+      if (nombresCats().some((n) => sinAcentos(n) === sinAcentos(nombre))) return aviso("Esa categoría ya existe.");
+      const c = nuevaCatDoc(nombre);
+      cerrarModal();
+      if (mover) moverProducto(mover.c, mover.p, c.id);
+      catActiva = c.id; renderTabla();
+      aviso(mover ? `Categoría "${nombre}" creada y producto movido.` : `Categoría "${nombre}" creada.`);
+    };
+    $("ncNo").onclick = () => { cerrarModal(); renderTabla(); };
+    $("ncSi").onclick = crear;
+    $("ncNombre").onkeydown = (e) => { if (e.key === "Enter") crear(); };
+  }
+
+  // ---------- menú ----------
+  $("btnMenu").addEventListener("click", (e) => { e.stopPropagation(); $("menu").hidden = !$("menu").hidden; });
+  document.addEventListener("click", () => ($("menu").hidden = true));
+  $("menu").addEventListener("click", (e) => {
+    const a = e.target.dataset.accion; if (!a || !puedeEditar) return;
+    $("menu").hidden = true;
+    ({ porcentaje: dialogoPorcentaje, categorias: dialogoCategorias, csv: descargarCSV, respaldo: descargarRespaldo,
+       restaurar: () => $("archivoRespaldo").click(), reiniciar: dialogoReiniciar })[a]();
+  });
+
+  function dialogoPorcentaje() {
+    abrirModal(`<h2>Ajustar precios por %</h2>
+      <label for="pct">Porcentaje (negativo para bajar, ej: -5)</label><input id="pct" type="number" step="0.1" placeholder="Ej: 10">
+      <label for="pctCat">Aplicar a</label><select id="pctCat"><option value="${TODAS}">Todas las categorías</option>${cats.map((c) => `<option value="${c.id}" ${c.id === catActiva ? "selected" : ""}>${esc(c.nombre)}</option>`).join("")}</select>
+      <label for="pctCol">Columna</label><select id="pctCol"><option value="ambas">Mayorista y Minorista</option><option value="mayorista">Solo Mayorista</option><option value="minorista">Solo Minorista</option></select>
+      <label for="pctRed">Redondear a</label><select id="pctRed"><option value="10">Múltiplo de $10</option><option value="50">Múltiplo de $50</option><option value="1">Sin redondear</option></select>
+      <p class="nota-chica">Se cambia el primer número de cada precio. Los productos sin precio no se tocan.</p>
+      <div class="pie"><button class="btn" id="pctNo" type="button">Cancelar</button><button class="btn primario" id="pctSi" type="button">Aplicar</button></div>`);
+    $("pctNo").onclick = cerrarModal;
+    $("pctSi").onclick = () => {
+      const pct = parseFloat($("pct").value);
+      if (!isFinite(pct) || pct === 0) return aviso("Escribí un porcentaje.");
+      const cat = $("pctCat").value, col = $("pctCol").value, red = Number($("pctRed").value);
+      const ajustar = (v) => String(v ?? "").replace(/^\d+([.,]\d+)?/, (n) => String(Math.round(Number(n.replace(",", ".")) * (1 + pct / 100) / red) * red));
+      let cambios = 0;
+      cats.forEach((c) => {
+        if (cat !== TODAS && c.id !== cat) return;
+        let toco = false;
+        c.productos.forEach((p) => ["mayorista", "minorista"].forEach((k) => {
+          if (col !== "ambas" && col !== k) return;
+          const n = ajustar(p[k]); if (n !== p[k]) { p[k] = n; cambios++; toco = true; }
+        }));
+        if (toco) guardarCat(c, true);
+      });
+      cerrarModal(); renderTabla(); aviso(`${cambios} precios actualizados.`);
+    };
+  }
+
+  function dialogoCategorias() {
+    const copia = cats.map((c) => ({ id: c.id, nombre: c.nombre }));
+    const dibujar = () => {
+      abrirModal(`<h2>Categorías</h2><div>${copia.map((c, i) => `<div class="cat-item"><input data-i="${i}" value="${esc(c.nombre)}" aria-label="Nombre de la categoría"><button class="btn-fila" type="button" data-sube="${i}" title="Subir">⬆️</button><button class="btn-fila" type="button" data-baja="${i}" title="Eliminar">🗑️</button></div>`).join("")}</div>
+        <div class="pie"><button class="btn" id="cNo" type="button">Cancelar</button><button class="btn primario" id="cSi" type="button">Guardar</button></div>`);
+      $("cNo").onclick = () => { cerrarModal(); renderTabla(); };
+      $("cSi").onclick = guardarCats;
+    };
+    $("modal").oninput = (e) => { if (e.target.dataset.i !== undefined) copia[e.target.dataset.i].nombre = e.target.value; };
+    $("modal").onclick = async (e) => {
+      if (e.target === $("modal")) { cerrarModal(); return; }
+      const s = e.target.closest("[data-sube]"), b = e.target.closest("[data-baja]");
+      if (s) { const i = +s.dataset.sube; if (i > 0) { [copia[i - 1], copia[i]] = [copia[i], copia[i - 1]]; dibujar(); } }
+      if (b) {
+        const item = copia[+b.dataset.baja], c = catPorId(item.id), n = c ? c.productos.length : 0;
+        if (n && !(await confirmar("Eliminar categoría", `"${item.nombre}" tiene ${n} productos. Si la eliminás, también se eliminan.`, "Eliminar"))) { dibujar(); return; }
+        copia.splice(+b.dataset.baja, 1); dibujar();
+      }
+    };
+    async function guardarCats() {
+      const nombres = copia.map((c) => c.nombre.trim());
+      if (nombres.some((n) => !n)) return aviso("Hay categorías sin nombre.");
+      if (new Set(nombres.map(sinAcentos)).size !== nombres.length) return aviso("Hay categorías repetidas.");
+      const vivas = new Set(copia.map((c) => c.id));
+      try {
+        for (const c of cats.filter((x) => !vivas.has(x.id))) await db.doc("categorias/" + c.id).delete();
+        for (let i = 0; i < copia.length; i++) {
+          const c = catPorId(copia[i].id), nombre = nombres[i];
+          if (c && (c.nombre !== nombre || c.orden !== i + 1)) { c.nombre = nombre; c.orden = i + 1; await db.doc("categorias/" + c.id).update({ nombre, orden: i + 1 }); }
+        }
+      } catch (e) { errorDb(e); }
+      cats = cats.filter((c) => vivas.has(c.id)).sort((a, b) => a.orden - b.orden);
+      if (catActiva !== TODAS && !catPorId(catActiva)) catActiva = TODAS;
+      cerrarModal(); renderTabla(); aviso("Categorías guardadas.");
+    }
+    dibujar();
+  }
+
+  // ---------- candado del editor ----------
+  async function hashear(texto) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("manantial:" + texto));
+    return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  function desbloqueado() { try { return localStorage.getItem(CLAVE_EDITOR) === HASH_EDITOR; } catch (e) { return false; } }
+  function aplicarModo() {
+    puedeEditar = esEditor && desbloqueado();
+    document.body.classList.toggle("puede", puedeEditar);
+    document.body.classList.toggle("bloqueado", esEditor && !puedeEditar);
+    if (!puedeEditar && editando) {
+      editando = false; document.body.classList.remove("editando");
+      $("btnEditar").textContent = "✏️ Editar"; $("aviso").hidden = true;
+    }
+    renderTabla();
+  }
+  function pedirClave() {
+    abrirModal(`<h2>Editar</h2><label for="clave">Contraseña</label>
+      <div class="campo-clave"><input id="clave" type="text" name="codigo-editor" class="oculto" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"><button type="button" id="ojo" class="ojo" aria-label="Mostrar contraseña" title="Mostrar contraseña">${OJO}</button></div>
+      <div class="pie"><button class="btn" id="clNo" type="button">Cancelar</button><button class="btn primario" id="clSi" type="button">Entrar</button></div>`);
+    $("clave").focus();
+    const entrar = async () => {
+      try {
+        if ((await hashear($("clave").value)) !== HASH_EDITOR) { $("clave").value = ""; return aviso("Contraseña incorrecta."); }
+        localStorage.setItem(CLAVE_EDITOR, HASH_EDITOR);
+      } catch (e) { return aviso("No se pudo verificar la contraseña en este navegador."); }
+      cerrarModal(); aplicarModo(); aviso("Modo editor activado.");
+    };
+    // se verifica mientras escribe: si es correcta, el cartel se cierra solo
+    $("clave").oninput = async () => { try { if ((await hashear($("clave").value)) === HASH_EDITOR) entrar(); } catch (e) { /* se verifica con Entrar */ } };
+    $("ojo").onclick = () => {
+      const oculta = $("clave").classList.toggle("oculto");
+      $("ojo").innerHTML = oculta ? OJO : OJO_TACHADO;
+      $("ojo").title = $("ojo").ariaLabel = oculta ? "Mostrar contraseña" : "Ocultar contraseña";
+      $("clave").focus();
+    };
+    $("clNo").onclick = cerrarModal;
+    $("clSi").onclick = entrar;
+    $("clave").onkeydown = (e) => { if (e.key === "Enter") entrar(); };
+  }
+  $("btnAdmin").addEventListener("click", pedirClave);
+  $("btnSalir").addEventListener("click", () => {
+    try { localStorage.removeItem(CLAVE_EDITOR); } catch (e) { /* nada */ }
+    aplicarModo(); aviso("Saliste del modo editor.");
+  });
+
+  // ---------- restaurar y volver al catálogo original ----------
+  function normalizarRespaldo(d) {
+    const txt = (x) => String(x ?? "");
+    const prod = (p) => ({ id: p.id ? txt(p.id) : "p" + uid(), nombre: txt(p.nombre), sub: txt(p.sub), mayorista: txt(p.mayorista), minorista: txt(p.minorista), unidad: p.unidad === "kg" ? "kg" : "uni", nota: txt(p.nota) });
+    if (!d || !Array.isArray(d.categorias) || !d.categorias.length) return null;
+    if (typeof d.categorias[0] === "object") {            // copia de esta página
+      return d.categorias.map((c) => ({ nombre: txt(c.nombre), productos: (c.productos || []).map(prod) }));
+    }
+    if (Array.isArray(d.productos)) {                      // copia de la versión de archivo (index.html)
+      return d.categorias.map((n) => ({ nombre: txt(n), productos: d.productos.filter((p) => p.categoria === n).map(prod) }));
+    }
+    return null;
+  }
+  async function reemplazarCatalogo(lista) {
+    temporizadores.forEach((t) => clearTimeout(t)); temporizadores.clear();
+    try {
+      await Promise.all([...cadenas.values()]);
+      const existentes = new Map(cats.map((c) => [sinAcentos(c.nombre), c]));
+      const usados = new Set();
+      for (let i = 0; i < lista.length; i++) {
+        const n = lista[i], ex = existentes.get(sinAcentos(n.nombre)), id = ex ? ex.id : "c" + uid();
+        usados.add(id);
+        await db.doc("categorias/" + id).set({ nombre: n.nombre, orden: i + 1, productos: n.productos, actualizado: new Date().toISOString() });
+      }
+      for (const c of cats) if (!usados.has(c.id)) await db.doc("categorias/" + c.id).delete();
+      sucias.clear(); catActiva = TODAS;
+      aviso("Lista restaurada.");
+    } catch (e) { errorDb(e); }
+  }
+  $("archivoRespaldo").addEventListener("change", async (e) => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f || !puedeEditar) return;
+    let lista = null;
+    try { lista = normalizarRespaldo(JSON.parse(await f.text())); } catch (err) { lista = null; }
+    if (!lista) return aviso("El archivo no es una copia de seguridad válida.");
+    if (await confirmar("Restaurar copia de seguridad", "Esto reemplaza la lista actual por la de la copia. ¿Continuar?", "Restaurar")) reemplazarCatalogo(lista);
+  });
+  async function dialogoReiniciar() {
+    if (await confirmar("Volver al catálogo original", "Esto borra TODOS los cambios y vuelve al catálogo original del cuaderno. ¿Seguro?", "Volver al original")) reemplazarCatalogo(clonar(CATALOGO_ORIGINAL));
+  }
+
+  // ---------- descargas ----------
+  async function descargar(nombre, contenido) {
+    if (!descargas) return aviso("Descargar no está disponible en esta vista.");
+    try { await descargas.save({ filename: nombre, data: contenido }); aviso("Archivo guardado."); }
+    catch (e) { if (e && e.code !== "declined") aviso("No se pudo descargar el archivo."); }
+  }
+  const fechaArchivo = () => new Date().toISOString().slice(0, 10);
+  function descargarCSV() {
+    const celda = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
+    const filas = [["Categoría", "Producto", "Sub descripción", "Mayorista", "Minorista", "Unidad", "Nota"]];
+    cats.forEach((c) => c.productos.forEach((p) => filas.push([c.nombre, p.nombre, p.sub, p.mayorista, p.minorista, p.unidad, p.nota])));
+    descargar(`lista-precios-${fechaArchivo()}.csv`, "﻿" + filas.map((f) => f.map(celda).join(";")).join("\r\n"));
+  }
+  function descargarRespaldo() {
+    descargar(`respaldo-lista-${fechaArchivo()}.json`, JSON.stringify({ categorias: cats }, null, 2));
+  }
+
+  // ---------- arranque ----------
+  function mostrarSinAcceso() {
+    $("estado").hidden = false;
+    $("estado").innerHTML = `<h2>Iniciá sesión para ver la lista</h2><p>Esta lista se abre con una cuenta de Claude que tenga acceso.</p>`;
+  }
+  (async () => {
+    renderTabs();
+    $("estado").hidden = false; $("estado").innerHTML = `<p>Cargando lista…</p>`;
+    try {
+      const [d, u, dl] = await Promise.all([claude.use("db"), claude.use("user"), claude.use("downloads")]);
+      db = d; descargas = dl;
+      esEditor = u ? await u.canEdit() : false;
+    } catch (e) { db = null; }
+    aplicarModo();
+    if (!db) return mostrarSinAcceso();
+    db.collection("categorias").onSnapshot((snap) => {
+      const previas = new Map(cats.map((c) => [c.id, c]));
+      ultimaActualizacion = snap.docs.reduce((m, d) => { const a = (d.data() || {}).actualizado; return a && (!m || a > m) ? a : m; }, ultimaActualizacion);
+      cats = snap.docs.map((d) => {
+        if (sucias.has(d.id) && previas.has(d.id)) return previas.get(d.id); // hay cambios propios sin confirmar
+        const x = d.data() || {};
+        return { id: d.id, nombre: x.nombre || "", orden: x.orden || 0, productos: clonar(x.productos || []) };
+      });
+      for (const [id, c] of previas) if (sucias.has(id) && !cats.some((k) => k.id === id)) cats.push(c);
+      cats.sort((a, b) => a.orden - b.orden);
+      if (catActiva !== TODAS && !catPorId(catActiva)) catActiva = TODAS;
+      cargado = true;
+      $("estado").hidden = true;
+      pedirRender();
+    }, () => { cargado = false; mostrarSinAcceso(); });
+  })();
+})();
+</script>
