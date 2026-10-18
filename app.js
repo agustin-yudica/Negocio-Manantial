@@ -180,6 +180,10 @@
   function ordenar(lista) {
     if (!ordenCol) return lista;
     const signo = ordenDir === "desc" ? -1 : 1;
+    if (ordenCol === "nombre") {
+      // alfabético, sin distinguir mayúsculas ni acentos
+      return [...lista].sort((a, b) => signo * a.nombre.localeCompare(b.nombre, "es", { sensitivity: "base", numeric: true }));
+    }
     // los productos sin precio quedan siempre al final
     return [...lista].sort((a, b) => {
       const x = valorNumerico(a[ordenCol]), y = valorNumerico(b[ordenCol]);
@@ -194,6 +198,11 @@
       const activo = b.dataset.orden === ordenCol;
       b.classList.toggle("activo", activo);
       b.querySelector(".flecha").textContent = !activo ? "⇅" : ordenDir === "desc" ? "▼" : "▲";
+      if (b.dataset.orden === "nombre") {
+        b.querySelector(".flecha").textContent = !activo ? "⇅" : ordenDir === "asc" ? "▲" : "▼";
+        b.title = !activo ? "Ordenar de la A a la Z" : ordenDir === "asc" ? "De la A a la Z (tocá para invertir)" : "De la Z a la A (tocá para quitar el orden)";
+        return;
+      }
       b.title = !activo ? "Ordenar de mayor a menor" : ordenDir === "desc" ? "Ordenado de mayor a menor (tocá para invertir)" : "Ordenado de menor a mayor (tocá para quitar el orden)";
     });
   }
@@ -262,8 +271,10 @@
   document.querySelector("thead").addEventListener("click", (e) => {
     const b = e.target.closest(".orden"); if (!b) return;
     const col = b.dataset.orden;
-    if (ordenCol !== col) { ordenCol = col; ordenDir = "desc"; }
-    else if (ordenDir === "desc") ordenDir = "asc";
+    // Producto: A→Z, Z→A, sin orden. Precios: mayor→menor, menor→mayor, sin orden.
+    const primero = col === "nombre" ? "asc" : "desc", segundo = col === "nombre" ? "desc" : "asc";
+    if (ordenCol !== col) { ordenCol = col; ordenDir = primero; }
+    else if (ordenDir === primero) ordenDir = segundo;
     else ordenCol = null;
     pintarTabla();
   });
