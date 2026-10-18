@@ -98,7 +98,9 @@ td.precio, th.c-precio { text-align: right; width: 130px; }
 td.precio { font-variant-numeric: tabular-nums; font-weight: 600; }
 td.mayo { background: var(--mayo); }
 td.mino { background: var(--mino); }
-td.nota { color: var(--suave); font-size: .9rem; }
+td.nota { color: var(--suave); font-size: .9rem; text-align: center; }
+th.c-nota { text-align: center; }
+td.nota input { text-align: center; }
 td.sin { color: #b8b3a6; font-weight: 400; }
 tr.cat-fila td { background: var(--fila-cat); color: var(--acento); font-family: "Fraunces", Georgia, serif; font-weight: 700; font-size: 1.05rem; }
 td input {
@@ -148,13 +150,13 @@ dialog .pie { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18
 
   /* Vista: misma tabla que en la computadora (Producto | Mayorista | Minorista) */
   body:not(.editando) th, body:not(.editando) td { padding: 8px 6px; }
-  body:not(.editando) th { font-size: .7rem; }
+  body:not(.editando) th { font-size: .64rem; letter-spacing: 0; }
   body:not(.editando) th.c-precio, body:not(.editando) td.precio { width: auto; }
   /* la nota va en una sola línea (horizontal); si es muy larga se desplaza de costado */
   body:not(.editando) th.c-nota, body:not(.editando) td.nota { width: 1%; font-size: .72rem; line-height: 1.2; white-space: nowrap; }
   body:not(.editando) .tabla-scroll { overflow-x: auto; }
-  body:not(.editando) td.nombre { font-size: .92rem; line-height: 1.25; }
-  body:not(.editando) td.precio { font-size: .9rem; white-space: nowrap; }
+  body:not(.editando) td.nombre { font-size: .9rem; line-height: 1.25; overflow-wrap: anywhere; }
+  body:not(.editando) td.precio { font-size: .8rem; white-space: nowrap; }
 
   /* Edición: cada producto como tarjeta para que los campos sean cómodos */
   body.editando table, body.editando thead, body.editando tbody, body.editando tr, body.editando td { display: block; }

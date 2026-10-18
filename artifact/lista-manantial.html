@@ -83,7 +83,9 @@
   td.mayo { background: var(--mayo); }
   td.mino { background: var(--mino); }
   td.sin { color: var(--suave); font-weight: 400; opacity: .6; }
-  td.nota { color: var(--suave); font-size: .9rem; }
+  td.nota { color: var(--suave); font-size: .9rem; text-align: center; }
+  th.c-nota { text-align: center; }
+  td.nota input { text-align: center; }
   #tabla.sin-notas .c-nota, #tabla.sin-notas td.nota { display: none; }
   .sub { display: block; color: var(--suave); font-size: .78rem; font-weight: 400; margin-top: 2px; }
   tr.cat-fila td { background: var(--fila-cat); color: var(--acento); font-family: var(--serif); font-weight: 700; font-size: 1.05rem; }
@@ -178,7 +180,7 @@
             <th class="c-nombre"><button type="button" class="orden" data-orden="nombre" title="Ordenar de la A a la Z">Producto <span class="flecha">⇅</span></button></th>
             <th class="c-precio"><button type="button" class="orden" data-orden="mayorista" title="Ordenar por Mayorista">Mayorista <span class="flecha">⇅</span></button></th>
             <th class="c-precio"><button type="button" class="orden" data-orden="minorista" title="Ordenar por Minorista">Minorista <span class="flecha">⇅</span></button></th>
-            <th class="c-nota">Nota</th>
+            <th class="c-nota">Comentario</th>
             <th class="c-acc solo-edicion"></th>
           </tr>
         </thead>
@@ -313,7 +315,7 @@
       <td class="nombre"><input data-campo="nombre" value="${esc(p.nombre)}" placeholder="Producto" aria-label="Producto"><input class="sub-input" data-campo="sub" value="${esc(p.sub)}" placeholder="Sub descripción (opcional)" aria-label="Sub descripción"></td>
       <td class="precio mayo"><input data-campo="mayorista" value="${esc(p.mayorista)}" placeholder="Mayorista" aria-label="Precio mayorista"></td>
       <td class="precio mino"><input data-campo="minorista" value="${esc(p.minorista)}" placeholder="Minorista" aria-label="Precio minorista"></td>
-      <td class="nota"><input data-campo="nota" value="${esc(p.nota)}" placeholder="Nota" aria-label="Nota"></td>
+      <td class="nota"><input data-campo="nota" value="${esc(p.nota)}" placeholder="Comentario" aria-label="Comentario"></td>
       <td class="acc solo-edicion">
         <select data-campo="categoria" aria-label="Categoría">${optCat}</select>
         <select data-campo="unidad" aria-label="Se vende por"><option value="kg" ${p.unidad === "kg" ? "selected" : ""}>por kg</option><option value="uni" ${p.unidad === "uni" ? "selected" : ""}>por unidad</option></select>
@@ -634,7 +636,7 @@
   const fechaArchivo = () => new Date().toISOString().slice(0, 10);
   function descargarCSV() {
     const celda = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
-    const filas = [["Categoría", "Producto", "Sub descripción", "Mayorista", "Minorista", "Unidad", "Nota"]];
+    const filas = [["Categoría", "Producto", "Sub descripción", "Mayorista", "Minorista", "Unidad", "Comentario"]];
     cats.forEach((c) => c.productos.forEach((p) => filas.push([c.nombre, p.nombre, p.sub, p.mayorista, p.minorista, p.unidad, p.nota])));
     descargar(`lista-precios-${fechaArchivo()}.csv`, "﻿" + filas.map((f) => f.map(celda).join(";")).join("\r\n"));
   }

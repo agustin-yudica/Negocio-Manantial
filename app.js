@@ -227,7 +227,7 @@
       </td>
       <td class="precio mayo"><input data-campo="mayorista" value="${esc(p.mayorista)}" inputmode="text" placeholder="Mayorista"></td>
       <td class="precio mino"><input data-campo="minorista" value="${esc(p.minorista)}" inputmode="text" placeholder="Minorista"></td>
-      <td class="nota"><input data-campo="nota" value="${esc(p.nota)}" placeholder="Nota"></td>
+      <td class="nota"><input data-campo="nota" value="${esc(p.nota)}" placeholder="Comentario" aria-label="Comentario"></td>
       <td class="acc edit-only">
         <select data-campo="categoria" title="Categoría" style="width:100%;margin-bottom:4px">${opcionesCat}</select>
         <select data-campo="unidad" title="Se vende por kg o por unidad" style="width:100%;margin-bottom:4px">
@@ -241,7 +241,7 @@
   function pintarTabla() {
     const lista = ordenar(filtrados());
     pintarOrden();
-    // la columna Nota solo se muestra si hay alguna nota a la vista (o si se está editando)
+    // la columna Comentario solo se muestra si hay alguno a la vista (o si se está editando)
     $("tabla").classList.toggle("sin-notas", !editando && !lista.some((p) => p.nota));
     $("vacio").hidden = lista.length > 0;
     let html = "";
@@ -426,7 +426,7 @@
   function fechaArchivo() { return new Date().toISOString().slice(0, 10); }
   function descargarCSV() {
     const celda = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
-    const filas = [["Categoría", "Producto", "Sub descripción", "Mayorista", "Minorista", "Unidad", "Nota"]];
+    const filas = [["Categoría", "Producto", "Sub descripción", "Mayorista", "Minorista", "Unidad", "Comentario"]];
     estado.productos.forEach((p) => filas.push([p.categoria, p.nombre, p.sub, p.mayorista, p.minorista, p.unidad, p.nota]));
     descargar(`lista-precios-${fechaArchivo()}.csv`, "﻿" + filas.map((f) => f.map(celda).join(";")).join("\r\n"), "text/csv;charset=utf-8");
   }
